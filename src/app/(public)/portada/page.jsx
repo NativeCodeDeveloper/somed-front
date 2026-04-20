@@ -47,7 +47,7 @@ export default function Portada() {
     ),
 
     subtitle:
-      "Somos un equipo dedicado a cuidar tu salud visual con un enfoque integral. Exámenes completos, receta de lentes y atención desde los 5 años de edad.",
+      "Somos un equipo dedicado a cuidar tu salud visual, ajustando cada detalle de tu visión. Exámenes completos, receta de lentes y atención desde los 5 años de edad.",
 
     actions: [
       {
