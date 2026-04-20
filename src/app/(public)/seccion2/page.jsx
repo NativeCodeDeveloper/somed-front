@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import RevealOnScroll from "@/Componentes/RevealOnScroll";
-import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { ArrowUpRight } from "lucide-react";
@@ -14,20 +13,20 @@ export default function Seccion2() {
   const fallbackServices = [
     {
       id: "srv-1",
-      name: "Atención médica general",
-      description: "Evaluación integral de salud, orientación profesional y seguimiento.",
+      name: "Lagrimeo y ojo seco",
+      description: "¿Sufres de lagrimeo, sensación de ojo seco? Podría ser una señal de una condición que debemos evaluar. Acércate a nosotros.",
       image: "/fondo2.png",
     },
     {
       id: "srv-2",
-      name: "Tratamientos Metabólicos",
-      description: "Planes personalizados para la salud a largo plazo.",
+      name: "Cataratas",
+      description: "¿Crees que podrías tener cataratas u otra molestia visual? Te evaluamos con equipos de última tecnología actualizada.",
       image: "/fondo3.png",
     },
     {
       id: "srv-3",
-      name: "Nutrición Clínica",
-      description: "Orientación alimentaria para mejorar tu calidad de vida.",
+      name: "Control visual infantil",
+      description: "Atendemos pacientes desde los 5 años de edad, acompañando a niños en cada etapa de su desarrollo visual.",
       image: "/fondo1.png",
     },
   ];
@@ -70,17 +69,17 @@ export default function Seccion2() {
         <RevealOnScroll>
           <div className="flex flex-col items-center text-center">
             <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="h-px w-8 bg-indigo-600"></div>
-              <span className="text-sm font-semibold tracking-widest text-indigo-600 uppercase">
-                Servicios Médicos
+              <div className="h-px w-8" style={{ backgroundColor: "#4DBFBF" }}></div>
+              <span className="text-sm font-semibold tracking-widest uppercase" style={{ color: "#4DBFBF" }}>
+                Qué me caracteriza
               </span>
-              <div className="h-px w-8 bg-indigo-600"></div>
+              <div className="h-px w-8" style={{ backgroundColor: "#4DBFBF" }}></div>
             </div>
             <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl mb-6">
-              Nuestras Especialidades
+              Sobre mí
             </h2>
             <p className="max-w-2xl text-lg text-slate-600">
-              Explora todos los tratamientos y servicios dinámicos que ofrecemos en nuestra clínica para abordar tu salud metabólica de forma completa.
+              Somos un equipo de profesionales dedicados a cuidar tu salud visual con un enfoque integral y personalizado. Contamos con equipos de última tecnología, siempre actualizados para una mejor atención.
             </p>
           </div>
         </RevealOnScroll>
@@ -102,27 +101,30 @@ export default function Seccion2() {
                   className="transition duration-500 ease-out group-hover:scale-105"
                 />
 
-                {/* Gradient overlay for readability and premium look */}
+                {/* Gradient overlay */}
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-slate-900/80 to-transparent pointer-events-none" />
 
-                {/* Top Right Label for Service Name (if short enough) */}
-                <div className="absolute top-6 right-6 rounded-full bg-indigo-600/90 backdrop-blur-md px-5 py-2 text-sm font-semibold text-white shadow-lg max-w-[80%] text-center truncate">
+                {/* Top Right Label */}
+                <div
+                  className="absolute top-6 right-6 rounded-full backdrop-blur-md px-5 py-2 text-sm font-semibold text-white shadow-lg max-w-[80%] text-center truncate"
+                  style={{ backgroundColor: "rgba(77,191,191,0.9)" }}
+                >
                   {service.name}
                 </div>
 
-                {/* Bottom Descriptions since it's a service, they need to see description */}
+                {/* Bottom Description */}
                 <div className="absolute bottom-6 left-[6.5rem] right-6 p-2 pointer-events-none">
                   <h3 className="text-white font-bold text-lg leading-tight mb-1 drop-shadow-md">{service.name}</h3>
                   <p className="text-white/80 text-sm line-clamp-2">{service.description}</p>
                 </div>
 
-                {/* Bottom Left Cutout Illusion Wrapper */}
+                {/* Bottom Left Cutout */}
                 <div className="absolute bottom-0 left-0 h-[5.5rem] w-[5.5rem] rounded-tr-[2rem] bg-slate-50 transition-colors">
                   <div className="absolute bottom-0 left-0 bg-slate-50 h-full w-full" />
-                  {/* The interactive circular button resting in the cutout */}
                   <Link
                     href={`/contacto`}
-                    className="absolute bottom-4 left-4 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all hover:scale-105"
+                    className="absolute bottom-4 left-4 flex h-14 w-14 items-center justify-center rounded-full text-white shadow transition-all hover:scale-105"
+                    style={{ backgroundColor: "#4DBFBF" }}
                   >
                     <ArrowUpRight className="h-5 w-5" />
                   </Link>

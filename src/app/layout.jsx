@@ -15,25 +15,23 @@ export const metadataBase = new URL(
 
 export const metadata = {
   title: {
-    default: "Metaclinic | Tratamiento Médico Metabólico en Santiago",
-    template: "%s | Metaclinic",
+    default: "Somed | Consulta obtolmológica",
+    template: "%s | Somed",
   },
   description:
-    "Metaclinic: Transformando la salud metabólica a través de la ciencia, empatía e innovación clínica. Evaluación médica, terapias GLP-1 y acompañamiento continuo en Santiago, Chile.",
+    "Somed: Consulta oftalmológica integral en Linares, Chile. Dra. Tamara Morellana Machuca. Expertos en salud visual y cuidado ocular.",
   keywords: [
-    "Metaclinic",
-    "tratamiento metabólico",
-    "GLP-1",
-    "salud metabólica",
-    "medicina clínica",
-    "control de peso",
-    "Santiago",
+    "Somed",
+    "Consulta oftalmológica",
+    "salud visual",
+    "Oftalmología",
+    "Linares",
     "Chile",
-    "tratamiento a medida",
-    "consulta médica",
+    "tratamiento personalizado",
+    "consulta oftalmológica",
   ],
-  authors: [{ name: "Metaclinic", url: metadataBase.href }],
-  publisher: "Metaclinic",
+  authors: [{ name: "Somed", url: metadataBase.href }],
+  publisher: "Somed",
   robots: {
     index: true,
     follow: true,
@@ -45,33 +43,33 @@ export const metadata = {
     canonical: metadataBase.href,
   },
   icons: {
-    icon: "/logosolo.png",
-    shortcut: "/logosolo.png",
-    apple: "/logosolo.png",
+    icon: "/somedlogo.png",
+    shortcut: "/somedlogo.png",
+    apple: "/somedlogo.png",
   },
   openGraph: {
-    title: "Metaclinic | Tratamiento Médico Metabólico en Santiago",
+    title: "Somed | Consulta obtolmológica",
     description:
-      "Transformando la salud metabólica a través de la ciencia, la empatía y la innovación clínica para resultados sostenibles.",
+      "Somed: Consulta oftalmológica integral en Linares, Chile. Dra. Tamara Morellana Machuca. Expertos en salud visual y cuidado ocular.",
     url: metadataBase.href,
-    siteName: "Metaclinic",
+    siteName: "Somed",
     locale: "es_CL",
     type: "website",
     images: [
       {
-        url: "/logonombre.png",
+        url: "/somedlogo.png",
         width: 1200,
         height: 630,
-        alt: "Metaclinic",
+        alt: "Somed",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Metaclinic",
+    title: "Somed",
     description:
-      "Evaluación médica, terapias farmacológicas avanzadas (GLP-1) y acompañamiento continuo para control metabólico real.",
-    image: "/logonombre.png",
+      "Somed: Consulta oftalmológica integral en Linares, Chile. Dra. Tamara Morellana Machuca. Expertos en salud visual y cuidado ocular.",
+    image: "/somedlogo.png",
   },
 };
 

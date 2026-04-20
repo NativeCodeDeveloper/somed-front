@@ -41,14 +41,14 @@ export default function AgendaProfesionales() {
 
         {/* Usable Header Block */}
         <div className="max-w-3xl mb-12 lg:mb-16 animate-reveal-up border-b border-slate-200 pb-10">
-          <span className="text-sm font-bold tracking-widest text-indigo-600 uppercase mb-4 block">
+          <span className="text-sm font-bold tracking-widest uppercase mb-4 block" style={{ color: "#4DBFBF" }}>
             Paso 1: Selección de Especialista
           </span>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
-            Reserva de Sesiones
+            Agenda tu consulta
           </h1>
           <p className="text-slate-600 text-lg md:text-xl font-light leading-relaxed">
-            Selecciona el profesional de tu preferencia para acceder a su calendario y agendar tu próxima evaluación en tiempo real.
+            Selecciona el profesional de tu preferencia para acceder a su calendario y agendar tu evaluación oftalmológica en tiempo real.
           </p>
         </div>
 
@@ -63,10 +63,19 @@ export default function AgendaProfesionales() {
             >
 
               {/* Functional Clean Card */}
-              <div className="w-full bg-white rounded-3xl p-8 flex flex-col justify-between h-full border border-slate-200 hover:border-indigo-600 hover:shadow-lg transition-all duration-300">
+              <div className="w-full bg-white rounded-3xl p-8 flex flex-col justify-between h-full border border-slate-200 hover:shadow-lg transition-all duration-300"
+                style={{ '--hover-border': '#4DBFBF' }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#4DBFBF'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = ''; }}
+              >
                 <div>
                   {/* Avatar initial block */}
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-50 text-xl font-bold text-indigo-600 mb-6 transition-colors group-hover:bg-indigo-600 group-hover:text-white">
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-2xl mb-6 transition-colors text-xl font-bold"
+                style={{ backgroundColor: "#e8f9f9", color: "#4DBFBF" }}
+                onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#4DBFBF'; e.currentTarget.style.color = 'white'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#e8f9f9'; e.currentTarget.style.color = '#4DBFBF'; }}
+              >
                     {profesional.nombreProfesional?.charAt(0)}
                   </div>
 
@@ -79,11 +88,14 @@ export default function AgendaProfesionales() {
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[15px] font-bold text-indigo-600 group-hover:text-indigo-800 transition-colors">
+                  <span className="text-[15px] font-bold transition-colors" style={{ color: "#4DBFBF" }}>
                     Ver Calendario
                   </span>
-                  <div className="rounded-full bg-indigo-50 p-2 group-hover:bg-indigo-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                  <div className="rounded-full p-2 transition-colors" style={{ backgroundColor: "#e8f9f9" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#b2e8e8'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#e8f9f9'; }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" style={{ color: "#4DBFBF" }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                     </svg>
                   </div>

@@ -1,100 +1,180 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Stethoscope, Pill, CalendarClock } from "lucide-react";
+import { ArrowRight, Eye, Glasses, CalendarClock } from "lucide-react";
 import RevealOnScroll from "@/Componentes/RevealOnScroll";
 
 const services = [
   {
-    id: "consulta",
-    title: "Consulta inicial metabólica",
-    desc: "Evaluación médica completa con anamnesis estructurada y determinación de elegibilidad para el tratamiento.",
-    icon: <Stethoscope className="h-6 w-6" />,
-    img: "/logosolo.png",
+    id: "examen",
+    title: "Examen oftalmológico completo",
+    desc: "Evaluación visual integral para determinar el estado de tu salud ocular y obtener la receta de lentes precisa y adaptada a tus necesidades.",
+    icon: <Eye className="h-6 w-6" />,
   },
   {
-    id: "tratamiento",
-    title: "Tratamiento con GLP-1",
-    desc: "Indicación y seguimiento de terapias, con titulación progresiva y control de efectos adversos.",
-    icon: <Pill className="h-6 w-6" />,
-    img: "/logosolo.png",
+    id: "lentes",
+    title: "Receta de lentes",
+    desc: "Determinación precisa de tu graduación visual con equipos de última tecnología, para lentes de aro o de contacto.",
+    icon: <Glasses className="h-6 w-6" />,
   },
   {
     id: "seguimiento",
-    title: "Seguimiento semanal",
-    desc: "Monitoreo digital con médico tratante para evaluar evolución clínica, adherencia y tolerancia.",
+    title: "Seguimiento visual",
+    desc: "Acompañamiento continuo de tu salud visual en cada etapa de la vida, desde los 5 años de edad hasta la adultez.",
     icon: <CalendarClock className="h-6 w-6" />,
-    img: "/logosolo.png",
   },
 ];
 
 export default function Seccion1() {
-  return (
-    <section id="servicios" className="scroll-mt-24 bg-slate-50 py-20 sm:py-28 text-slate-800">
-      <div className="mx-auto w-full max-w-7xl px-5 md:px-8 lg:px-10">
+  const [hoveredItem, setHoveredItem] = useState(null);
 
-        {/* Header */}
-        <RevealOnScroll className="max-w-3xl mb-16">
-          <div className="flex items-center gap-4 mb-4">
-            <div className="h-px w-10 bg-indigo-600"></div>
-            <span className="text-sm font-semibold tracking-widest text-indigo-600 uppercase">
-              Profesional y Especializado
-            </span>
+  return (
+    <section
+      id="servicios"
+      className="scroll-mt-24 bg-slate-50 py-20 text-slate-800 sm:py-28"
+    >
+      <div className="mx-auto w-full max-w-7xl px-5 md:px-8 lg:px-10">
+        <RevealOnScroll className="mx-auto mb-14 max-w-3xl text-center md:mb-16">
+          <div
+            className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full text-white shadow-md"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(77,191,191,0.85), rgba(77,191,191,1))",
+              boxShadow: "0 10px 30px rgba(77,191,191,0.25)",
+            }}
+          >
+            <Eye className="h-8 w-8" />
           </div>
-          <h2 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl mb-6">
+
+          <h2 className="mb-3 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
             Nuestros Servicios
           </h2>
-          <p className="text-lg text-slate-600">
-            Transforma tu peso y salud con nuestro programa integral. Desde la evaluación inicial hasta el control semanal, nuestro equipo médico asegura un tratamiento seguro y efectivo adaptado a ti.
+
+          <p className="mx-auto max-w-2xl text-lg leading-relaxed text-slate-600">
+            Realizamos exámenes oftalmológicos completos para cuidar tu salud
+            visual con un enfoque integral y personalizado. Atendemos a niños y
+            adultos con la misma dedicación y profesionalismo.
           </p>
         </RevealOnScroll>
 
-        {/* Cards Grid */}
-        <div className="grid gap-8 md:grid-cols-3">
-          {services.map((item) => (
-            <RevealOnScroll key={item.id} className="h-full">
-              <article className="relative flex h-full flex-col overflow-hidden rounded-[2.5rem] bg-white transition duration-300 hover:shadow-xl hover:shadow-slate-200">
+        <div className="mx-auto max-w-5xl space-y-4">
+          {services.map((item, index) => {
+            const isHovered = hoveredItem === item.id;
+            const isFeatured = index === 0;
 
-                {/* The "notch" image effect */}
-                <div className="absolute top-0 left-0 h-28 w-[65%]">
-                  <div className="relative h-full w-full rounded-br-[2.5rem] overflow-hidden">
-                    <Image
-                      src={item.img}
-                      alt={item.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="opacity-90"
-                    />
-                  </div>
-                </div>
-
-                {/* Card Content Area. Add top padding to clear the image notch */}
-                <div className="relative z-10 flex flex-1 flex-col p-8 pt-[8.5rem]">
-                  {/* Purple Circle Icon */}
-                  <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-md shadow-indigo-200">
-                    {item.icon}
-                  </div>
-
-                  <h3 className="mb-4 text-2xl font-bold text-slate-900 leading-tight">
-                    {item.title}
-                  </h3>
-
-                  <p className="mb-8 text-slate-600 leading-relaxed flex-1">
-                    {item.desc}
-                  </p>
-
-                  <Link
-                    href="/agendaProfesionales"
-                    className="group inline-flex items-center font-semibold text-slate-900 hover:text-indigo-600 transition-colors"
+            return (
+              <RevealOnScroll key={item.id}>
+                <div
+                  className="group relative"
+                  onMouseEnter={() => setHoveredItem(item.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <article
+                    className={`relative overflow-hidden rounded-[2rem] border bg-white transition-all duration-300 ease-in-out ${isHovered
+                        ? "border-[rgba(77,191,191,0.45)] shadow-xl"
+                        : "border-slate-200/80 hover:border-[rgba(77,191,191,0.28)]"
+                      }`}
+                    style={{
+                      boxShadow: isHovered
+                        ? "0 18px 45px rgba(15, 23, 42, 0.08), 0 8px 24px rgba(77,191,191,0.12)"
+                        : "0 8px 24px rgba(15, 23, 42, 0.04)",
+                    }}
                   >
-                    Saber más
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </div>
-              </article>
-            </RevealOnScroll>
-          ))}
-        </div>
+                    <div
+                      className={`transition-all duration-300 ${isHovered ? "min-h-[170px]" : "min-h-[128px]"
+                        }`}
+                    >
+                      {isHovered && (
+                        <>
+                          <div className="absolute left-4 top-4 h-6 w-6">
+                            <div
+                              className="absolute left-0 top-0 h-0.5 w-4"
+                              style={{ backgroundColor: "#4DBFBF" }}
+                            />
+                            <div
+                              className="absolute left-0 top-0 h-4 w-0.5"
+                              style={{ backgroundColor: "#4DBFBF" }}
+                            />
+                          </div>
 
+                          <div className="absolute bottom-4 right-4 h-6 w-6">
+                            <div
+                              className="absolute bottom-0 right-0 h-0.5 w-4"
+                              style={{ backgroundColor: "#4DBFBF" }}
+                            />
+                            <div
+                              className="absolute bottom-0 right-0 h-4 w-0.5"
+                              style={{ backgroundColor: "#4DBFBF" }}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      <div className="flex h-full flex-col justify-between gap-6 px-6 py-6 md:flex-row md:items-center md:px-8">
+                        <div className="flex flex-1 items-start gap-4 md:gap-5">
+                          <div
+                            className={`mt-1 flex h-14 w-14 shrink-0 items-center justify-center rounded-full text-white transition-all duration-300 ${isHovered ? "scale-105" : ""
+                              }`}
+                            style={{
+                              backgroundColor: "#4DBFBF",
+                              boxShadow: isHovered
+                                ? "0 10px 24px rgba(77,191,191,0.28)"
+                                : "0 4px 14px rgba(77,191,191,0.22)",
+                            }}
+                          >
+                            {item.icon}
+                          </div>
+
+                          <div className="flex-1">
+                            <h3
+                              className={`font-bold leading-tight transition-colors duration-300 ${isFeatured
+                                  ? "text-2xl md:text-3xl"
+                                  : "text-xl md:text-2xl"
+                                } ${isHovered ? "text-slate-900" : "text-slate-900"
+                                }`}
+                            >
+                              {item.title}
+                            </h3>
+
+                            <p
+                              className={`mt-2 max-w-3xl text-sm leading-relaxed transition-all duration-300 md:text-base ${isHovered
+                                  ? "text-slate-700 opacity-100"
+                                  : "text-slate-500 opacity-95"
+                                }`}
+                            >
+                              {item.desc}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-4 md:justify-end">
+                          <Link
+                            href="/agendaProfesionales"
+                            className="inline-flex items-center text-sm font-semibold text-slate-900 transition-colors duration-300 hover:text-teal-500 md:text-base"
+                          >
+                            Saber más
+                            <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                          </Link>
+
+                          <div
+                            className={`hidden md:flex items-center justify-center rounded-full transition-all duration-300 ${isHovered
+                                ? "translate-x-0 opacity-100"
+                                : "translate-x-2 opacity-0"
+                              }`}
+                            style={{ color: "#4DBFBF" }}
+                          >
+                            <ArrowRight className="h-7 w-7" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                </div>
+              </RevealOnScroll>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

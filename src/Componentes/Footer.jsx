@@ -1,13 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Facebook, Instagram, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 
 const footerLinks = [
   { label: "Inicio", href: "/#inicio" },
-  { label: "Servicios", href: "/#servicios" },
-  { label: "Equipo Médico", href: "/#equipo" },
+  { label: "Sobre mí", href: "/#servicios" },
+  { label: "Servicios", href: "/#servicios-clinicos" },
   { label: "Testimonios", href: "/#testimonios" },
-  { label: "Agendar", href: "/reserva-hora" },
+  { label: "Agendar", href: "/agendaProfesionales" },
 ];
 
 const externalLinks = [
@@ -36,17 +38,10 @@ const socialLinks = [
 
 export default function FooterPremiumMedico() {
   return (
-    <footer id="footer" className="relative overflow-hidden bg-slate-950 text-slate-300 pt-20 pb-12">
-
-      {/* Background Watermark */}
-      <div className="absolute inset-x-0 bottom-0 flex justify-center pointer-events-none select-none overflow-hidden opacity-5 z-0">
-        <span className="text-[16vw] font-black leading-none text-white whitespace-nowrap translate-y-1/4">
-          METABOCARE
-        </span>
-      </div>
+    <footer id="footer" className="relative overflow-hidden text-white pt-20 pb-12" style={{ backgroundColor: "#198289ff" }}>
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 md:px-8 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8 border-b border-slate-800 pb-16">
+        <div className="grid gap-12 lg:grid-cols-12 lg:gap-8 border-b pb-16" style={{ borderColor: "rgba(77,191,191,0.2)" }}>
 
           {/* Brand Info */}
           <div className="lg:col-span-4">
@@ -54,37 +49,38 @@ export default function FooterPremiumMedico() {
             <Link href="/" aria-label="Ir al inicio" className="group flex shrink-0 items-center gap-3 mb-6">
               <div className="relative shrink-0 transition-transform duration-300 group-hover:scale-105">
                 <Image
-                  src="/logonombre.png"
+                  src="/somedlogo.png"
                   alt="Logo Metaclinic"
-                  width={165}
-                  height={65}
+                  width={190}
+                  height={190}
                   priority
-                  className="h-12 w-auto object-contain sm:h-18"
+                  className="h-24 w-auto object-contain sm:h-30"
                 />
               </div>
             </Link>
 
-            <p className="text-slate-400 leading-relaxed max-w-sm mb-8">
-              Transformando la salud metabólica a través de la ciencia, la empatía y la innovación clínica para resultados sostenibles.
+            <p className="text-white leading-relaxed max-w-sm mb-8">
+              Cuidamos tu salud visual con profesionalismo, tecnología de última generación y un enfoque integral para toda la familia.
             </p>
 
-            <div className="space-y-4 text-sm text-slate-400">
-              <a href="tel:+56987728500" className="flex items-center gap-3 transition hover:text-indigo-400">
-                <Phone className="h-5 w-5 text-indigo-500" />
-                +56 9 8772 8500
+            <div className="space-y-4 text-sm text-white">
+              <a href="tel:+56988617307" className="flex items-center gap-3 transition hover:text-slate-200">
+                <Phone className="h-5 w-5" style={{ color: "#4DBFBF" }} />
+                +569 88617307
               </a>
-              <a href="mailto:Centrointegral.essenza@gmail.com" className="flex items-center gap-3 transition hover:text-indigo-400">
-                <Mail className="h-5 w-5 text-indigo-500" />
-                contacto@metaclinic.cl
+              <a href="mailto:tmorellanamachuca@gmail.com" className="flex items-center gap-3 transition hover:text-slate-200>">
+                <Mail className="h-5 w-5" style={{ color: "#4DBFBF" }} />
+                tmorellanamachuca@gmail.com
               </a>
               <a
-                href="https://maps.google.com/?q=Santiago,+Chile"
+                href="https://maps.google.com/?q=Kurt+Moller+523,+Linares,+Chile"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-start gap-3 transition hover:text-indigo-400"
+                className="flex items-start gap-3 transition <hover:text-white>"
               >
-                <MapPin className="h-5 w-5 shrink-0 text-indigo-500" />
-                Santiago, Chile
+                <MapPin className="h-5 w-5 shrink-0" style={{ color: "#4DBFBF" }} />
+                Kurt Moller 523, Linares
+                <span className="block text-slate-200">(entre Lautaro y Chacabuco)</span>
               </a>
             </div>
           </div>
@@ -100,7 +96,7 @@ export default function FooterPremiumMedico() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className="text-slate-400 transition hover:text-white"
+                      className="text-white transition hover:text-slate-200"
                     >
                       {item.label}
                     </Link>
@@ -117,7 +113,7 @@ export default function FooterPremiumMedico() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
-                      className="text-slate-400 transition hover:text-white"
+                      className="text-white transition hover:text-slate-200"
                     >
                       {item.label}
                     </Link>
@@ -139,7 +135,9 @@ export default function FooterPremiumMedico() {
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={item.label}
-                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition hover:bg-indigo-600 hover:text-white"
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-800 text-slate-400 transition hover:text-white"
+                      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#4DBFBF'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = ''; }}
                     >
                       <Icon className="h-5 w-5" />
                     </a>
@@ -149,11 +147,11 @@ export default function FooterPremiumMedico() {
 
               <div className="rounded-2xl overflow-hidden h-32 w-full mt-4">
                 <iframe
-                  title="Mapa ubicacion Metaclinic"
-                  src="https://www.google.com/maps?q=Santiago,+Chile&output=embed"
+                  title="Mapa ubicacion SOMED"
+                  src="https://www.google.com/maps?q=Kurt+Moller+523,+Linares,+Chile&output=embed"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
-                  className="h-full w-full grayscale opacity-70"
+                  className="h-full w-full color opacity-70"
                 />
               </div>
             </div>
@@ -162,15 +160,15 @@ export default function FooterPremiumMedico() {
         </div>
 
         {/* Copyright */}
-        <div className="mt-8 flex flex-col gap-4 text-sm text-slate-500 md:flex-row md:items-center md:justify-between px-2">
-          <p>© {new Date().getFullYear()} Metaclinic. Todos los derechos reservados.</p>
+        <div className="mt-8 flex flex-col gap-4 text-sm text-white md:flex-row md:items-center md:justify-between px-2">
+          <p>© {new Date().getFullYear()} SOMED - Centro de Salud y Especialidades. Todos los derechos reservados.</p>
           <p>
             Desarrollado por{" "}
             <a
               href="https://nativecode.cl"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-slate-400 hover:text-white transition"
+              className="font-medium text-slate-300 hover:text-white transition"
             >
               NativeCode
             </a>
