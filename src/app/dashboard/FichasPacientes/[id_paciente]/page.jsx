@@ -508,6 +508,7 @@ export default function Paciente() {
                             Cargar Fichas
                         </button>
 
+                        {/* TEMP: botón Evaluación comentado
                         <button
                             onClick={() =>  verEvaluaciones()}
                             className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-all duration-150 hover:border-slate-300 hover:bg-slate-100">
@@ -516,6 +517,7 @@ export default function Paciente() {
                             </svg>
                             Evaluacion
                         </button>
+                        */}
                         <button
                             onClick={() => nuevaFichaClinica(id_paciente)}
                             className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(59,130,246,0.24)] transition-all duration-150 hover:from-indigo-700 hover:to-cyan-600">

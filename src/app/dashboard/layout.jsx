@@ -141,8 +141,8 @@ export default function DashboardLayout({ children }) {
                                 </div>
 
 
+                                {/* TEMP: opción Criterios Clínicos comentada
                                 <div className="mt-1 space-y-0.5">
-
                                     <Link
                                         href="/dashboard/criteriosClinicos"
                                         className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200"
@@ -151,6 +151,7 @@ export default function DashboardLayout({ children }) {
                                         Ingreso de Criterios Clinicos
                                     </Link>
                                 </div>
+                                */}
 
 
                                 <Link
