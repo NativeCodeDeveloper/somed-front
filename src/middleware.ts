@@ -52,18 +52,18 @@ export default clerkMiddleware(async (auth, req) => {
 
   const { userId, sessionClaims } = await auth()
 
-  // No autenticado → sign-in
-  if (!userId) {
-    return NextResponse.redirect(new URL('/sign-in', req.url))
-  }
+  // TEMP: comentado para entrar directo al dashboard sin autenticación y presentar a cliente
+  // if (!userId) {
+  //   return NextResponse.redirect(new URL('/sign-in', req.url))
+  // }
 
   // Leer rol desde publicMetadata (configurado en Clerk Dashboard)
   const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role
 
-  // Recepcionista → solo accede a inicio + calendario, el resto → no-access
-  if (role === 'recepcionista' && !isRecepcionistaAllowed(req)) {
-    return NextResponse.redirect(new URL('/dashboard/no-access', req.url))
-  }
+  // TEMP: comentado para saltarse restricción de rol recepcionista
+  // if (role === 'recepcionista' && !isRecepcionistaAllowed(req)) {
+  //   return NextResponse.redirect(new URL('/dashboard/no-access', req.url))
+  // }
 
   return NextResponse.next()
 })
