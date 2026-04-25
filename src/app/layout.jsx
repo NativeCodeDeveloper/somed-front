@@ -15,7 +15,7 @@ export const metadataBase = new URL(
 
 export const metadata = {
   title: {
-    default: "Somed | Consulta obtolmológica",
+    default: "Somed | Consulta oftalmológica",
     template: "%s | Somed",
   },
   description:
@@ -48,7 +48,7 @@ export const metadata = {
     apple: "/somedlogo.png",
   },
   openGraph: {
-    title: "Somed | Consulta obtolmológica",
+    title: "Somed | Consulta oftalmológica",
     description:
       "Somed: Consulta oftalmológica integral en Linares, Chile. Dra. Tamara Morellana Machuca. Expertos en salud visual y cuidado ocular.",
     url: metadataBase.href,
