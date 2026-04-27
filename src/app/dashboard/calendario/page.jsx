@@ -1,7 +1,7 @@
 "use client"
 
 import {useState, useMemo, useEffect, useRef, Suspense} from "react";
-import {useSearchParams} from "next/navigation";
+import {useRouter, useSearchParams} from "next/navigation";
 import {Calendar, dateFnsLocalizer} from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
@@ -42,6 +42,7 @@ export default function Calendario() {
 function CalendarioContent() {
 
     const API = process.env.NEXT_PUBLIC_API_URL;
+    const router = useRouter();
     const popupRef = useRef(null);
     const popupDragStateRef = useRef({dragging: false, offsetX: 0, offsetY: 0});
     const selectionGuardRef = useRef({missingProfessional: false, overlap: false});
@@ -240,6 +241,8 @@ function CalendarioContent() {
         email: "",
         motivoBloqueo: "",
     });
+    const [popupReservaAbierto, setPopupReservaAbierto] = useState(false);
+    const [reservaSeleccionada, setReservaSeleccionada] = useState(null);
 
     useEffect(() => {
         function actualizarModoMobile() {
@@ -1186,6 +1189,7 @@ function CalendarioContent() {
             setHoraFinalizacion(reserva.horaFinalizacion ?? "");
             setEstadoReserva(reserva.estadoReserva ?? "");
             setId_profesional(reserva.id_profesional ?? "");
+            return reserva;
         } catch (error) {
             console.log(error);
             return toast.error("El servidor no responde");
@@ -1198,6 +1202,11 @@ function CalendarioContent() {
 
     function limpiarData() {
         setNombrePaciente(""); setApellidoPaciente(""); setTelefono(""); setRut(""); setEmail("");
+    }
+
+    function cerrarPopupReserva() {
+        setPopupReservaAbierto(false);
+        setReservaSeleccionada(null);
     }
 
     async function cambiarEstadoRapido(estadoNuevo) {
@@ -1224,6 +1233,61 @@ function CalendarioContent() {
         if (actualizado) {
             setEstadoReserva(estadoNuevo);
             await seleccionarReservaEspecifica(id_reserva);
+            setReservaSeleccionada((prev) => prev ? ({...prev, estadoReserva: estadoNuevo}) : prev);
+        }
+    }
+
+    async function abrirPopupReserva(event) {
+        limpiarSeleccionTemporal();
+
+        if (!event?.id_reserva) {
+            return toast.error("No se encontró el ID de la reserva");
+        }
+
+        setid_reserva(event.id_reserva);
+        const reserva = await seleccionarReservaEspecifica(event.id_reserva);
+        if (!reserva) {
+            return;
+        }
+
+        setReservaSeleccionada(reserva);
+        setPopupReservaAbierto(true);
+    }
+
+    async function irACarpetaClinicaDesdeReserva() {
+        try {
+            const rutReserva = (reservaSeleccionada?.rut ?? rut ?? "").trim();
+
+            if (!rutReserva) {
+                return toast.error("Esta reserva no tiene RUT para buscar la ficha clínica.");
+            }
+
+            const res = await fetch(`${API}/pacientes/contieneRut`, {
+                method: "POST",
+                headers: {Accept: "application/json", "Content-Type": "application/json"},
+                body: JSON.stringify({rut: rutReserva}),
+                mode: "cors"
+            });
+
+            if (!res.ok) {
+                return toast.error("No fue posible buscar la ficha clínica del paciente.");
+            }
+
+            const coincidencias = await res.json();
+            const rutNormalizado = normalizarRut(rutReserva);
+            const pacienteEncontrado = Array.isArray(coincidencias)
+                ? coincidencias.find((paciente) => normalizarRut(paciente.rut) === rutNormalizado)
+                : null;
+
+            if (!pacienteEncontrado?.id_paciente) {
+                return toast.error("Este paciente no tiene una ficha abierta.");
+            }
+
+            cerrarPopupReserva();
+            router.push(`/dashboard/FichasPacientes/${pacienteEncontrado.id_paciente}`);
+        } catch (error) {
+            console.log(error);
+            return toast.error("No fue posible abrir la carpeta clínica del paciente.");
         }
     }
 
@@ -1667,11 +1731,7 @@ function CalendarioContent() {
                                 return true;
                             }}
                             onSelectEvent={(event) => {
-                                limpiarSeleccionTemporal();
-                                if (!event?.id_reserva) { toast.error("No se encontró el ID de la reserva"); return; }
-                                setid_reserva(event.id_reserva);
-                                seleccionarReservaEspecifica(event.id_reserva);
-                                toast.success(`Reserva: Numero # ${event.id_reserva}`);
+                                abrirPopupReserva(event);
                             }}
                             onSelectSlot={(slotInfo) => {
                                 const start = slotInfo.start ?? slotInfo;
@@ -1874,6 +1934,97 @@ function CalendarioContent() {
                             >
                                 Agendar
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {popupReservaAbierto && reservaSeleccionada && (
+                <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/45 px-4 py-6">
+                    <div className="w-full max-w-xl rounded-[28px] border border-slate-200 bg-white shadow-[0_30px_90px_rgba(15,23,42,0.22)]">
+                        <div className="flex items-start justify-between gap-4 rounded-t-[28px] border-b border-slate-100 bg-[linear-gradient(135deg,rgba(15,23,42,0.98)_0%,rgba(49,46,129,0.95)_100%)] px-5 py-4">
+                            <div>
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-200">Reserva seleccionada</p>
+                                <h3 className="mt-1 text-lg font-semibold text-white">
+                                    {`${reservaSeleccionada.nombrePaciente ?? ""} ${reservaSeleccionada.apellidoPaciente ?? ""}`.trim() || "Paciente sin nombre"}
+                                </h3>
+                                <p className="mt-1 text-xs text-slate-300">
+                                    RUT: {reservaSeleccionada.rut || "Sin RUT"} · Estado actual: {reservaSeleccionada.estadoReserva || "reservada"}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={cerrarPopupReserva}
+                                className="rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+
+                        <div className="space-y-4 px-5 py-5">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Horario</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">
+                                        {fechaInicio || (reservaSeleccionada.fechaInicio ?? "").slice(0, 10)} · {horaInicio || reservaSeleccionada.horaInicio} - {horaFinalizacion || reservaSeleccionada.horaFinalizacion}
+                                    </p>
+                                </div>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Profesional</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">
+                                        {listaProfesionales.find((profesional) => profesional.id_profesional === (reservaSeleccionada.id_profesional ?? id_profesional))?.nombreProfesional ?? "Sin profesional"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-cyan-100 bg-cyan-50/70 px-4 py-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-700">Cambio rápido de estado</p>
+                                <p className="mt-1 text-xs text-slate-600">Actualiza la asistencia directamente desde el calendario.</p>
+                                <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => cambiarEstadoRapido("asiste")}
+                                        className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-500"
+                                    >
+                                        Marcar asiste
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => cambiarEstadoRapido("no asiste")}
+                                        className="rounded-xl bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-rose-500"
+                                    >
+                                        Marcar no asiste
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => cambiarEstadoRapido("finalizado")}
+                                        className="rounded-xl bg-orange-500 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-400"
+                                    >
+                                        Marcar finalizado
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">Acciones clínicas</p>
+                                <p className="mt-1 text-xs text-slate-500">Busca al paciente por coincidencia de RUT dentro de pacienteDatos y abre su carpeta clínica si existe.</p>
+                                <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                                    <button
+                                        type="button"
+                                        onClick={irACarpetaClinicaDesdeReserva}
+                                        className="rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-700 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_16px_34px_rgba(14,165,233,0.20)] transition-all hover:from-cyan-500 hover:to-indigo-600"
+                                    >
+                                        Ir a carpeta clínica
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => toast.success(`Reserva: Numero # ${reservaSeleccionada.id_reserva}`)}
+                                        className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-100"
+                                    >
+                                        Ver ID de reserva
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -197,7 +197,12 @@ export default function FormularioReservaProfesional() {
         setRut("");
         setTelefono("");
         setEmail("");
-        router.push(`/reserva-hora?fecha=${fechaInicio}&hora=${horaInicio}`);
+        const params = new URLSearchParams({
+            fecha: fechaInicio,
+            hora: horaInicio,
+            servicio: servicioSeleccionado,
+        });
+        router.push(`/reserva-hora?${params.toString()}`);
     }
 
 
