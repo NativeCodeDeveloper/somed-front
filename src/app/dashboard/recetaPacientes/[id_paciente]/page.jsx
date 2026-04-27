@@ -1,3 +1,4 @@
+
 'use client'
 import {useEffect, useState} from "react";
 import {useParams, useRouter} from "next/navigation";
@@ -38,6 +39,7 @@ export default function ReecetasPacientes() {
     const[profesional_responsable, setProfesional_responsable] = useState("");
     const[rut_profesional_manual, setRut_profesional_manual] = useState("");
     const[descripcion_receta, setDescripcion_receta] = useState("");
+    const[diagnostico_pdf, setDiagnostico_pdf] = useState("");
 
     const [listaRecetasPaciente, setListaRecetasPaciente] = useState([]);
     const[id_receta, setId_receta] = useState(null);
@@ -174,6 +176,7 @@ export default function ReecetasPacientes() {
         const rutProfesionalPDF = normalizarTextoPDF(
             rut_profesional_manual || profesionalSeleccionado?.rutProfesional || profesionalSeleccionado?.rut_profesional
         );
+        const diagnosticoPDF = diagnostico_pdf.trim();
 
         try {
             const footerY = pageH - 12;
@@ -217,9 +220,11 @@ export default function ReecetasPacientes() {
 
             let y = 48;
 
+            const altoBoxClinico = diagnosticoPDF ? 67 : 54;
+
             doc.setDrawColor(203, 213, 225);
             doc.setLineWidth(0.35);
-            doc.roundedRect(margin, y, anchoContenido, 54, 1.8, 1.8);
+            doc.roundedRect(margin, y, anchoContenido, altoBoxClinico, 1.8, 1.8);
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(8.5);
@@ -254,7 +259,19 @@ export default function ReecetasPacientes() {
             doc.text(`${calcularEdad(paciente?.nacimiento)} anos`, margin + 74, y + 49);
             doc.text(normalizarTextoPDF(previsionDeterminacion(paciente?.prevision_id)), margin + 130, y + 49);
 
-            y += 61;
+            if (diagnosticoPDF) {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(7.2);
+                doc.setTextColor(100, 116, 139);
+                doc.text("DIAGNOSTICO", margin + 4, y + 57);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(9.4);
+                doc.setTextColor(15, 23, 42);
+                doc.text(doc.splitTextToSize(diagnosticoPDF, anchoContenido - 12), margin + 4, y + 62);
+            }
+
+            y += altoBoxClinico + 7;
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(9);
@@ -349,7 +366,7 @@ export default function ReecetasPacientes() {
         id_profesional,
         profesional_responsable,
         descripcion_receta
-        ) {
+    ) {
         try {
 
             if (!nombre_paciente || !apellido_paciente ||  !rut_paciente ||  !id_paciente ||  !id_profesional || !profesional_responsable || !descripcion_receta) {
@@ -417,7 +434,7 @@ export default function ReecetasPacientes() {
         id_paciente
     ) {
         try {
-            
+
             const res = await fetch(`${API}/recetas/seleccionar_todas_Recetas_especificas_pacientes`,{
                 method: "POST",
                 headers: {Accept: "application/json",
@@ -523,13 +540,14 @@ export default function ReecetasPacientes() {
 
         return `${dia}/${mes}/${anio}`;
     }
-    
+
     async function limpiarFormulario() {
         setId_profesional(null);
         setId_receta(null);
         setProfesional_responsable("");
         setRut_profesional_manual("");
         setDescripcion_receta("");
+        setDiagnostico_pdf("");
         setUiOnlyProfesionalSeleccionado("");
         await seleccionarRecetasPaciente(id_paciente);
         return toast.success(`Informacion Actualizada!`);
@@ -761,85 +779,58 @@ export default function ReecetasPacientes() {
 
                             <div className="grid grid-cols-1 gap-6 p-5 md:p-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.85fr)]">
                                 <div className="space-y-5">
-                                    <div className="rounded-[24px] border border-slate-200 bg-[linear-gradient(180deg,rgba(248,250,252,0.85)_0%,#ffffff_100%)] p-5">
-                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <div className="rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
+                                        <p className="mb-2 text-xs font-semibold text-slate-700">Profesional que emite la receta</p>
+                                        <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
                                             <div>
-                                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Profesional responsable</p>
-                                                <h3 className="mt-1 text-lg font-bold text-slate-900">Selecciona quién emitirá la receta</h3>
-                                                <p className="mt-1 text-sm text-slate-500">
-                                                   Al seleccionar, se desplegaran los profesionales disponibles.
-                                                </p>
-                                            </div>
-                                            <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-200 bg-violet-50 text-violet-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.118a7.5 7.5 0 0115 0A17.933 17.933 0 0112 21.75a17.933 17.933 0 01-7.5-1.632z" />
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-5 space-y-3">
-                                            <label className="block text-sm font-semibold text-slate-700">
-                                                Profesional
-                                            </label>
-                                            <Select
-                                                value={uiOnlyProfesionalSeleccionado}
-                                                onValueChange={(value) => {
-                                                    setUiOnlyProfesionalSeleccionado(value);
-
-                                                    const profesionalEncontrado = listaProfesionales.find(
-                                                        (profesional) => String(profesional.id_profesional) === value
-                                                    );
-
-                                                    setId_profesional(Number(value));
-                                                    setProfesional_responsable(profesionalEncontrado?.nombreProfesional || "");
-                                                }}
-                                            >
-                                                <SelectTrigger className="h-12 w-full rounded-2xl border-slate-200 bg-white px-4 text-sm text-slate-900 shadow-none">
-                                                    <SelectValue placeholder="Selecciona un profesional" />
-                                                </SelectTrigger>
-                                                <SelectContent className="rounded-2xl border-slate-200 bg-white">
-                                                    {listaProfesionales.map((profesional) => (
-                                                        <SelectItem
-                                                            key={profesional.id_profesional}
-                                                            value={String(profesional.id_profesional)}
-                                                            className="rounded-xl py-2.5"
-                                                        >
-                                                            <div className="flex flex-col">
+                                                <label className="mb-1 block text-[11px] font-medium text-slate-500">Profesional</label>
+                                                <Select
+                                                    value={uiOnlyProfesionalSeleccionado}
+                                                    onValueChange={(value) => {
+                                                        setUiOnlyProfesionalSeleccionado(value);
+                                                        const profesionalEncontrado = listaProfesionales.find(
+                                                            (profesional) => String(profesional.id_profesional) === value
+                                                        );
+                                                        setId_profesional(Number(value));
+                                                        setProfesional_responsable(profesionalEncontrado?.nombreProfesional || "");
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="h-9 w-full rounded-xl border-slate-200 bg-white px-3 text-sm text-slate-900 shadow-none">
+                                                        <SelectValue placeholder="Selecciona un profesional" />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-slate-200 bg-white">
+                                                        {listaProfesionales.map((profesional) => (
+                                                            <SelectItem
+                                                                key={profesional.id_profesional}
+                                                                value={String(profesional.id_profesional)}
+                                                                className="rounded-lg py-2"
+                                                            >
                                                                 <span className="font-medium text-slate-900">{profesional.nombreProfesional}</span>
-                                                                <span className="text-xs text-slate-500">{profesional.descripcionProfesional}</span>
-                                                            </div>
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-
-                                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                                                <div>
-                                                    <label className="mb-1.5 block text-sm font-semibold text-slate-700">
-                                                        RUT profesional
-                                                    </label>
-                                                    <ShadcnInput
-                                                        value={rut_profesional_manual}
-                                                        onChange={(event) => setRut_profesional_manual(event.target.value)}
-                                                        placeholder="Opcional para el PDF"
-                                                        className="h-12 rounded-2xl border-slate-200 bg-white px-4 shadow-none"
-                                                    />
-                                                </div>
-                                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
-                                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Resumen profesional</p>
-                                                    <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                        {profesional_responsable || "Pendiente de selección"}
-                                                    </p>
-                                                    <p className="mt-1 text-xs text-slate-500">
-                                                        {profesionalSeleccionado?.descripcionProfesional || "Especialidad no informada"}
-                                                    </p>
-                                                </div>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
-
-                                            <p className="text-xs text-slate-500">
-                                                El RUT profesional es opcional y solo se usa para la generación del PDF. Guardar la receta no depende de este campo.
-                                            </p>
+                                            <div>
+                                                <label className="mb-1 block text-[11px] font-medium text-slate-500">RUT profesional</label>
+                                                <ShadcnInput
+                                                    value={rut_profesional_manual}
+                                                    onChange={(event) => setRut_profesional_manual(event.target.value)}
+                                                    placeholder="RUT para el PDF"
+                                                    className="h-9 rounded-xl border-slate-200 bg-white px-3 shadow-none"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="mb-1 block text-[11px] font-medium text-slate-500">Diagnóstico</label>
+                                                <ShadcnInput
+                                                    value={diagnostico_pdf}
+                                                    onChange={(event) => setDiagnostico_pdf(event.target.value)}
+                                                    placeholder="Diagnóstico para el PDF"
+                                                    className="h-9 rounded-xl border-slate-200 bg-white px-3 shadow-none"
+                                                />
+                                            </div>
                                         </div>
+                                        <p className="mt-1.5 text-[11px] text-slate-400">RUT y diagnóstico son opcionales, solo se usan en el PDF.</p>
                                     </div>
 
                                     <div className="rounded-[24px] border border-slate-200 bg-white p-5">
@@ -883,15 +874,17 @@ export default function ReecetasPacientes() {
                                                 <p className="mt-1 text-sm font-semibold text-slate-900">{paciente.nombre} {paciente.apellido}</p>
                                             </div>
                                             <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm">
-                                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Profesional seleccionado</p>
+                                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Profesional</p>
                                                 <p className="mt-1 text-sm font-semibold text-slate-900">
-                                                    {profesional_responsable|| "Pendiente de selección"}
+                                                    {profesional_responsable|| "Pendiente"}
                                                 </p>
-                                                <p className="mt-1 text-xs text-slate-500">
-                                                    RUT PDF: {rut_profesional_manual.trim() || "No informado"}
-                                                </p>
-
                                             </div>
+                                            {diagnostico_pdf.trim() && (
+                                                <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm">
+                                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Diagnóstico PDF</p>
+                                                    <p className="mt-1 text-sm font-semibold text-slate-900">{diagnostico_pdf}</p>
+                                                </div>
+                                            )}
                                             <div className="rounded-2xl border border-white/70 bg-white/80 px-4 py-3 shadow-sm">
                                                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Vista previa del texto</p>
                                                 <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-700">
@@ -982,11 +975,7 @@ export default function ReecetasPacientes() {
                             <div className="border-b border-slate-100 bg-[linear-gradient(135deg,rgba(248,250,252,0.96)_0%,rgba(238,242,255,0.96)_100%)] px-5 py-4 md:px-6">
                                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                     <div>
-                                        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-violet-500">Historial visual</p>
                                         <h2 className="text-xl font-bold text-slate-900">Recetas registradas</h2>
-                                        <p className="mt-1 text-sm text-slate-500">
-                                            Tabla de referencia solo visual con selector para revisión rápida.
-                                        </p>
                                     </div>
 
                                     <div className="w-full lg:max-w-xs">
@@ -1064,10 +1053,10 @@ export default function ReecetasPacientes() {
                                 <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 px-4 py-3 text-xs text-slate-500">
                                     <span>
                                         Filtro visual activo: {id_profesional_filtro === "todas"
-                                            ? "Todas las recetas"
-                                            : listaProfesionales.find(
-                                                (profesional) => String(profesional.id_profesional) === String(id_profesional_filtro)
-                                            )?.nombreProfesional || "Profesional no encontrado"}
+                                        ? "Todas las recetas"
+                                        : listaProfesionales.find(
+                                        (profesional) => String(profesional.id_profesional) === String(id_profesional_filtro)
+                                    )?.nombreProfesional || "Profesional no encontrado"}
                                     </span>
                                     <span>{listaRecetasPaciente.length} registros en pantalla</span>
                                 </div>

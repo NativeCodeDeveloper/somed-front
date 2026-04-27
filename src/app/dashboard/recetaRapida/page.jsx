@@ -18,6 +18,7 @@ export default function RecetaRapida() {
     const [fechaCaducidad, setFechaCaducidad] = useState("");
     const [descripcionReceta, setDescripcionReceta] = useState("");
     const [nombreProfesional, setNombreProfesional] = useState("");
+    const [diagnostico, setDiagnostico] = useState("");
 
     const nombreCompletoPaciente = useMemo(() => {
         return [nombrePaciente, apellidoPaterno, apellidoMaterno].filter(Boolean).join(" ").trim();
@@ -33,6 +34,7 @@ export default function RecetaRapida() {
         setFechaCaducidad("");
         setDescripcionReceta("");
         setNombreProfesional("");
+        setDiagnostico("");
     }
 
     function validarFormulario() {
@@ -45,6 +47,7 @@ export default function RecetaRapida() {
         if (!fechaCaducidad) return "Debe seleccionar la fecha de caducidad.";
         if (!descripcionReceta.trim()) return "Debe ingresar la descripción de la receta.";
         if (!nombreProfesional.trim()) return "Debe ingresar el nombre del profesional.";
+        if (!diagnostico.trim()) return "Debe ingresar el diagnóstico.";
 
         const emision = new Date(fechaEmision);
         const caducidad = new Date(fechaCaducidad);
@@ -117,7 +120,19 @@ export default function RecetaRapida() {
             doc.text(new Date(`${fechaCaducidad}T00:00:00`).toLocaleDateString("es-CL"), 84, y + 7);
             doc.text(nombreProfesional, 148, y + 7);
 
-            y += 24;
+            y += 18;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(8);
+            doc.setTextColor(100, 116, 139);
+            doc.text("DIAGNOSTICO", margin, y);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42);
+            doc.text(doc.splitTextToSize(diagnostico.trim(), rightX - margin), margin, y + 7);
+
+            y += 18;
 
             doc.setDrawColor(226, 232, 240);
             doc.setLineWidth(0.35);
@@ -276,6 +291,16 @@ export default function RecetaRapida() {
                                 </div>
 
                                 <div>
+                                    <label className="mb-1.5 block text-sm font-medium text-slate-700">Diagnóstico</label>
+                                    <ShadcnInput
+                                        value={diagnostico}
+                                        placeholder="Ej: Faringitis aguda"
+                                        onChange={(e) => setDiagnostico(e.target.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+
+                                <div>
                                     <label className="mb-1.5 block text-sm font-medium text-slate-700">Fecha de emisión</label>
                                     <input
                                         type="date"
@@ -330,6 +355,10 @@ export default function RecetaRapida() {
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Profesional</p>
                                     <p className="mt-1 text-sm font-semibold text-slate-900">{nombreProfesional || "-"}</p>
+                                </div>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Diagnóstico</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">{diagnostico || "-"}</p>
                                 </div>
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Fechas</p>

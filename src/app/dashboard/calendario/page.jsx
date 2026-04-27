@@ -89,6 +89,11 @@ function CalendarioContent() {
             .rbc-time-header-content + .rbc-time-header-content {
                 border-color: #e2e8f0 !important;
             }
+            .rbc-time-content {
+                -webkit-overflow-scrolling: touch !important;
+                touch-action: pan-y !important;
+                overscroll-behavior: contain !important;
+            }
             .rbc-time-slot {
                 transition: background-color 120ms ease !important;
             }
@@ -132,7 +137,7 @@ function CalendarioContent() {
             .rbc-month-view .rbc-event {
                 min-height: 0 !important; height: auto !important; padding: 2px 3px !important;
                 line-height: 1.1 !important; white-space: normal !important; overflow: visible !important; word-break: break-word !important;
-                font-size: 40% !important;
+                font-size: 55% !important;
             }
             .rbc-time-view .rbc-event {
                 min-height: 0 !important; padding: 1px 2px !important;
@@ -143,6 +148,26 @@ function CalendarioContent() {
             .rbc-row-segment { z-index: 1 !important; }
             .rbc-event-label, .rbc-event-content { white-space: normal !important; overflow: visible !important; word-break: break-word !important; font-size: 40% !important; }
             .rbc-event-label { display: none !important; }
+            @media (min-width: 768px) {
+                .rbc-month-view .rbc-event-label,
+                .rbc-month-view .rbc-event-content {
+                    font-size: 55% !important;
+                }
+            }
+            @media (max-width: 767px) {
+                .rbc-time-view,
+                .rbc-time-content,
+                .rbc-day-slot,
+                .rbc-time-column {
+                    touch-action: pan-y !important;
+                }
+                .rbc-toolbar {
+                    flex-wrap: wrap !important;
+                }
+                .rbc-toolbar button {
+                    min-height: 38px !important;
+                }
+            }
         `;
         document.head.appendChild(style);
         return () => { document.head.removeChild(style); };
@@ -151,6 +176,7 @@ function CalendarioContent() {
     const [events, setEvents] = useState([]);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [currentView, setCurrentView] = useState("week");
+    const [esMobile, setEsMobile] = useState(false);
 
     const searchParams = useSearchParams();
 
@@ -197,6 +223,23 @@ function CalendarioContent() {
         email: "",
         motivoBloqueo: "",
     });
+
+    useEffect(() => {
+        function actualizarModoMobile() {
+            const mobile = window.innerWidth < 768;
+            setEsMobile(mobile);
+            setCurrentView((prev) => {
+                if (mobile && (prev === "month" || prev === "agenda")) {
+                    return "week";
+                }
+                return prev;
+            });
+        }
+
+        actualizarModoMobile();
+        window.addEventListener("resize", actualizarModoMobile);
+        return () => window.removeEventListener("resize", actualizarModoMobile);
+    }, []);
 
     async function seleccionarTodosProfesionalesCalendario() {
         try {
@@ -406,14 +449,10 @@ function CalendarioContent() {
         }
 
         const tipoSolapamiento = obtenerTipoSolapamiento(start, end, ignoredReservaId);
-        if (tipoSolapamiento) {
+        if (tipoSolapamiento === "reserva") {
             if (!selectionGuardRef.current.overlap) {
                 selectionGuardRef.current.overlap = true;
-                toast.error(
-                    tipoSolapamiento === "bloqueo"
-                        ? "No se puede agendar en horarios bloqueados."
-                        : "Horario no disponible. El rango se superpone con otra reserva."
-                );
+                toast.error("Horario no disponible. El rango se superpone con otra reserva.");
                 setTimeout(() => {
                     selectionGuardRef.current.overlap = false;
                 }, 1200);
@@ -460,7 +499,7 @@ function CalendarioContent() {
             const res = await fetch(`${API}/bloqueoAgenda/seleccionarBloqueosPorProfesional`, {
                 method: "POST",
                 headers: {Accept: "application/json",
-                "Content-Type": "application/json"},
+                    "Content-Type": "application/json"},
                 mode: "cors",
                 body: JSON.stringify({id_profesional})
             });
@@ -495,29 +534,51 @@ function CalendarioContent() {
     useEffect(() => {
         if (!draggingPopup) return;
 
+        function actualizarPosicion(clientX, clientY) {
+            const popupWidth = popupRef.current?.offsetWidth ?? 420;
+            const popupHeight = popupRef.current?.offsetHeight ?? 520;
+            const nextX = clientX - popupDragStateRef.current.offsetX;
+            const nextY = clientY - popupDragStateRef.current.offsetY;
+
+            setPopupPosition({
+                x: Math.max(8, Math.min(nextX, window.innerWidth - popupWidth - 8)),
+                y: Math.max(8, Math.min(nextY, window.innerHeight - popupHeight - 8)),
+            });
+        }
+
         function handleMove(event) {
             if (!popupDragStateRef.current.dragging) return;
-            setPopupPosition({
-                x: Math.max(16, event.clientX - popupDragStateRef.current.offsetX),
-                y: Math.max(16, event.clientY - popupDragStateRef.current.offsetY),
-            });
+            actualizarPosicion(event.clientX, event.clientY);
+        }
+
+        function handleTouchMove(event) {
+            if (!popupDragStateRef.current.dragging) return;
+            const touch = event.touches?.[0];
+            if (!touch) return;
+            event.preventDefault();
+            actualizarPosicion(touch.clientX, touch.clientY);
         }
 
         function handleUp() {
             popupDragStateRef.current.dragging = false;
             setDraggingPopup(false);
             document.body.style.userSelect = "";
+            document.body.style.touchAction = "";
         }
 
         window.addEventListener("mousemove", handleMove);
         window.addEventListener("mouseup", handleUp);
+        window.addEventListener("touchmove", handleTouchMove, {passive: false});
+        window.addEventListener("touchend", handleUp);
 
         return () => {
             window.removeEventListener("mousemove", handleMove);
             window.removeEventListener("mouseup", handleUp);
+            window.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("touchend", handleUp);
         };
     }, [draggingPopup]);
-    
+
 
     async function insertarNuevaReserva(nombrePaciente, apellidoPaciente, rut, telefono, email, fechaInicio, horaInicio, fechaFinalizacion, horaFinalizacion,id_profesional) {
         try {
@@ -575,11 +636,17 @@ function CalendarioContent() {
 
     async function ingresarPacienteDesdeAgenda() {
         try {
-            if (!nombrePaciente || !apellidoPaciente || !rut || !telefono || !email) {
+            const nombre = (nombrePaciente ?? "").trim();
+            const apellido = (apellidoPaciente ?? "").trim();
+            const rutLimpio = (rut ?? "").trim();
+            const telefonoLimpio = (telefono ?? "").trim();
+            const correo = (email ?? "").trim();
+
+            if (!nombre || !apellido || !rutLimpio || !telefonoLimpio || !correo) {
                 return toast.error("Debe completar nombre, apellido, RUT, teléfono y correo para ingresar el paciente.");
             }
 
-            const rutNormalizado = normalizarRut(rut);
+            const rutNormalizado = normalizarRut(rutLimpio);
             const resBusqueda = await fetch(`${API}/pacientes/contieneRut`, {
                 method: "POST",
                 headers: {Accept: "application/json", "Content-Type": "application/json"},
@@ -600,29 +667,43 @@ function CalendarioContent() {
                 headers: {Accept: "application/json", "Content-Type": "application/json"},
                 mode: "cors",
                 body: JSON.stringify({
-                    nombre: nombrePaciente,
-                    apellido: apellidoPaciente,
-                    rut,
+                    nombre,
+                    apellido,
+                    rut: rutLimpio,
                     nacimiento: "1900-01-01",
-                    sexo: "NO ESPECIFICA",
+                    sexo: "No especifica",
                     prevision_id: 1,
-                    telefono,
-                    correo: email,
+                    telefono: telefonoLimpio,
+                    correo,
                     direccion: "Por completar",
-                    pais: "Chile"
+                    pais: "Chile",
+                    observacion1: "Creado desde agenda",
+                    observacion2: "NO ESPECIFICADO",
+                    observacion3: "NO ESPECIFICADO",
+                    apoderado: "NO ESPECIFICADO",
+                    apoderado_rut: "NO ESPECIFICADO",
+                    medicamentosUsados: "NO ESPECIFICADO",
+                    habitos: "NO ESPECIFICADO",
+                    comentariosAdicionales: "Paciente ingresado manualmente desde agenda",
                 })
             });
 
             if (!resInsercion.ok) {
+                const detalle = await resInsercion.json().catch(() => null);
+                console.log("Error al ingresar paciente desde agenda:", detalle);
                 return toast.error("No se pudo ingresar el paciente desde la agenda.");
             }
 
             const respuestaBackend = await resInsercion.json();
-            if (respuestaBackend.message === true) {
-                return toast.success("Paciente ingresado correctamente. Quedó creado con datos base para completar después.");
-            }
 
-            return toast.error("No se pudo ingresar el paciente desde la agenda.");
+
+            if (respuestaBackend.message === "duplicado") {
+                return toast.success("El paciente ya se encuentra ingresado en el sistema.");
+            }else if (respuestaBackend.message === true) {
+                return toast.success("Paciente ingresado correctamente. Quedó creado con datos base para completar después.");
+            }else{
+                return toast.error("No se pudo ingresar el paciente desde la agenda.");
+            }
         } catch (error) {
             console.log(error);
             return toast.error("Ocurrió un problema al ingresar el paciente desde la agenda.");
@@ -698,6 +779,8 @@ function CalendarioContent() {
     const messages = useMemo(() => ({
         next: "Siguiente", previous: "Anterior", today: "Hoy", month: "Mes", week: "Semana", day: "Día", agenda: "Agenda", noEventsInRange: "No hay eventos",
     }), []);
+
+    const vistasDisponibles = esMobile ? ["week", "day"] : ["month", "week", "day", "agenda"];
 
     // Expande bloqueos multi-día en segmentos por día para que
     // react-big-calendar los muestre en la grilla horaria (no en all-day).
@@ -802,7 +885,7 @@ function CalendarioContent() {
                     textOverflow: 'clip',
                     lineHeight: esVistaMes ? '1' : '1.3',
                     padding: esVistaMes ? '2px 4px' : '6px 8px',
-                    fontSize: esVistaMes ? '0.45rem' : '0.32rem',
+                    fontSize: esVistaMes ? '0.58rem' : '0.32rem',
                     boxSizing: 'border-box',
                     borderRadius: '0px',
                     backgroundColor: 'rgba(107, 114, 128, 0.28)',
@@ -828,7 +911,7 @@ function CalendarioContent() {
                 textOverflow: 'ellipsis',
                 lineHeight: '1',
                 padding: esVistaMes ? '2px 4px' : '0',
-                fontSize: esVistaMes ? '0.45rem' : '0.32rem',
+                fontSize: esVistaMes ? '0.58rem' : '0.32rem',
                 boxSizing: 'border-box',
                 borderRadius: '0px',
                 backgroundColor: esSeleccion ? 'rgba(124, 58, 237, 0.24)' : paletteReserva.backgroundColor,
@@ -965,13 +1048,16 @@ function CalendarioContent() {
     function iniciarDragPopup(event) {
         if (!popupRef.current) return;
         const rect = popupRef.current.getBoundingClientRect();
+        const point = "touches" in event ? event.touches[0] : event;
+        if (!point) return;
         popupDragStateRef.current = {
             dragging: true,
-            offsetX: event.clientX - rect.left,
-            offsetY: event.clientY - rect.top,
+            offsetX: point.clientX - rect.left,
+            offsetY: point.clientY - rect.top,
         };
         setDraggingPopup(true);
         document.body.style.userSelect = "none";
+        document.body.style.touchAction = "none";
     }
 
     async function confirmarAgendamientoDesdePopup() {
@@ -1023,6 +1109,18 @@ function CalendarioContent() {
 
                 const respuestaBackend = await res.json();
                 if (respuestaBackend.message === true) {
+                    await refrescarCalendario();
+                    setid_reserva(0);
+                    setNombrePaciente("");
+                    setApellidoPaciente("");
+                    setRut("");
+                    setTelefono("");
+                    setEmail("");
+                    setfechaInicio("");
+                    setHoraInicio("");
+                    setfechaFinalizacion("");
+                    setHoraFinalizacion("");
+                    setEstadoReserva("");
                     return toast.success("Se ha eliminado con exito la reserva");
                 } else if (respuestaBackend.message === false) {
                     return toast.success("No se ha podido eliminar la reserva. Intente mas tarde.");
@@ -1327,7 +1425,7 @@ function CalendarioContent() {
                             view={currentView}
                             onView={(nextView) => setCurrentView(nextView)}
                             defaultView="week"
-                            views={["month", "week", "day", "agenda"]}
+                            views={vistasDisponibles}
                             style={{height: "100%"}}
                             selectable
                             resizable
@@ -1336,7 +1434,7 @@ function CalendarioContent() {
                             timeslots={2}
                             draggableAccessor={(event) => event.tipo === "reserva"}
                             resizableAccessor={(event) => event.tipo === "reserva"}
-                            longPressThreshold={10}
+                            longPressThreshold={esMobile ? 300 : 10}
                             onSelecting={(slot) => {
                                 const start = slot.start ?? slot;
                                 const end = slot.end ?? slot;
@@ -1387,29 +1485,31 @@ function CalendarioContent() {
                 <div className="fixed inset-0 z-[80] bg-transparent" onMouseDown={(e) => e.preventDefault()}>
                     <div
                         ref={popupRef}
-                        className="absolute w-[420px] rounded-3xl border border-violet-200 bg-white/95 shadow-[0_28px_80px_rgba(76,29,149,0.18)] backdrop-blur-xl"
+                        className="absolute w-[calc(100vw-32px)] max-w-[420px] rounded-[24px] border border-violet-200 bg-white/95 shadow-[0_28px_80px_rgba(76,29,149,0.18)] backdrop-blur-xl md:rounded-3xl"
                         style={{left: popupPosition.x, top: popupPosition.y}}
                         onMouseDown={(e) => e.stopPropagation()}
+                        onTouchStart={(e) => e.stopPropagation()}
                     >
                         <div
-                            className="flex cursor-move items-center justify-between rounded-t-3xl border-b border-violet-100 bg-[linear-gradient(135deg,rgba(245,243,255,0.98),rgba(237,233,254,0.98))] px-4 py-3"
+                            className="flex cursor-move touch-none items-center justify-between rounded-t-[24px] border-b border-violet-100 bg-[linear-gradient(135deg,rgba(245,243,255,0.98),rgba(237,233,254,0.98))] px-3 py-2.5 md:rounded-t-3xl md:px-4 md:py-3"
                             onMouseDown={iniciarDragPopup}
+                            onTouchStart={iniciarDragPopup}
                         >
                             <div>
                                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-violet-700">Nuevo agendamiento</p>
-                                <p className="mt-1 text-sm font-semibold text-slate-800">Confirma el rango seleccionado</p>
+                                <p className="mt-1 text-xs font-semibold text-slate-800 md:text-sm">Confirma el rango seleccionado</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={limpiarSeleccionTemporal}
-                                className="rounded-full border border-violet-100 bg-white px-2.5 py-1 text-xs text-slate-500 hover:text-slate-700"
+                                className="rounded-full border border-violet-100 bg-white px-2 py-1 text-[11px] text-slate-500 hover:text-slate-700 md:px-2.5 md:text-xs"
                             >
                                 Cerrar
                             </button>
                         </div>
 
-                        <div className="max-h-[58vh] space-y-3 overflow-y-auto px-4 py-4 text-sm text-slate-600">
-                            <div className="grid grid-cols-3 gap-2">
+                        <div className="max-h-[62vh] space-y-3 overflow-y-auto px-3 py-3 text-xs text-slate-600 md:max-h-[58vh] md:px-4 md:py-4 md:text-sm">
+                            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Inicio</div>
                                     <div className="mt-1 font-semibold text-violet-700">{formatHoraCorta(selectionDraft.start)}</div>
@@ -1435,7 +1535,7 @@ function CalendarioContent() {
                                     <p className="mt-1 text-xs text-slate-500">Completa los datos para crear el agendamiento.</p>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <label className="text-[11px] text-slate-500">Nombre</label>
                                         <input
@@ -1472,7 +1572,7 @@ function CalendarioContent() {
                                             placeholder="+56..."
                                         />
                                     </div>
-                                    <div className="col-span-2 space-y-1">
+                                    <div className="space-y-1 sm:col-span-2">
                                         <label className="text-[11px] text-slate-500">Correo</label>
                                         <input
                                             type="email"
@@ -1503,11 +1603,11 @@ function CalendarioContent() {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end gap-2 border-t border-slate-200 px-4 py-4">
+                        <div className="flex flex-col gap-2 border-t border-slate-200 px-3 py-3 md:flex-row md:items-center md:justify-end md:px-4 md:py-4">
                             <button
                                 type="button"
                                 onClick={limpiarSeleccionTemporal}
-                                className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+                                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 md:w-auto"
                             >
                                 Cancelar
                             </button>
@@ -1521,14 +1621,14 @@ function CalendarioContent() {
                                     selectionDraft.end.toTimeString().slice(0, 8),
                                     popupForm.motivoBloqueo
                                 )}
-                                className="rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+                                className="w-full rounded-xl border border-slate-300 bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200 md:w-auto"
                             >
                                 Bloquear horario
                             </button>
                             <button
                                 type="button"
                                 onClick={confirmarAgendamientoDesdePopup}
-                                className="rounded-xl bg-gradient-to-r from-violet-700 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(124,58,237,0.24)] transition-all hover:from-violet-600 hover:to-purple-500"
+                                className="w-full rounded-xl bg-gradient-to-r from-violet-700 to-purple-600 px-4 py-2 text-sm font-semibold text-white shadow-[0_16px_36px_rgba(124,58,237,0.24)] transition-all hover:from-violet-600 hover:to-purple-500 md:w-auto"
                             >
                                 Agendar
                             </button>

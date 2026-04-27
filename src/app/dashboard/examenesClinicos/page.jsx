@@ -158,14 +158,14 @@ export default function SolicitudExamenes() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50/30">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
             <ToasterClient />
 
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-10">
 
                 {/* Header */}
                 <div className="mb-8">
-                    <p className="text-xs font-semibold uppercase tracking-widest text-sky-600 mb-1">Administración</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-violet-600 mb-1">Administración</p>
                     <h1 className="text-2xl md:text-3xl font-bold text-slate-800 tracking-tight">
                         Gestión de Exámenes Clínicos
                     </h1>
@@ -177,14 +177,14 @@ export default function SolicitudExamenes() {
                     {/* Formulario */}
                     <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                         <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 flex items-center gap-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <h2 className="text-sm font-semibold text-slate-700 tracking-wide uppercase">
                                 {id_examen ? 'Editar Examen' : 'Nuevo Examen'}
                             </h2>
                             {id_examen && (
-                                <span className="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-sky-100 text-sky-700">
+                                <span className="ml-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-700">
                                     ID: {id_examen}
                                 </span>
                             )}
@@ -228,7 +228,7 @@ export default function SolicitudExamenes() {
                             <div className="flex flex-wrap gap-3 mt-6 pt-4 border-t border-slate-100">
                                 <button
                                     onClick={insertarExamen}
-                                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-cyan-500 rounded-lg hover:from-sky-700 hover:to-cyan-600 transition-all duration-150 shadow-md hover:shadow-lg"
+                                    className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-500 rounded-lg hover:from-violet-700 hover:to-indigo-600 transition-all duration-150 shadow-md hover:shadow-lg"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -270,13 +270,13 @@ export default function SolicitudExamenes() {
                     <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                         <div className="border-b border-slate-100 bg-slate-50/50 px-5 py-3 flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                                 </svg>
                                 <h2 className="text-sm font-semibold text-slate-700 tracking-wide uppercase">Listado de Exámenes</h2>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full text-xs font-bold bg-sky-100 text-sky-700">
+                                <span className="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full text-xs font-bold bg-violet-100 text-violet-700">
                                     {listaExamenes.length}
                                 </span>
                                 <button
@@ -295,7 +295,7 @@ export default function SolicitudExamenes() {
                             <Table>
                                 <TableCaption className="font-medium text-slate-400 text-xs py-4">Catálogo de exámenes clínicos registrados</TableCaption>
                                 <TableHeader>
-                                    <TableRow className="bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-600 hover:to-cyan-500">
+                                    <TableRow className="bg-[linear-gradient(135deg,#0f172a_0%,#312e81_60%,#0891b2_100%)] hover:bg-[linear-gradient(135deg,#0f172a_0%,#312e81_60%,#0891b2_100%)]">
                                         <TableHead className="w-[80px] text-center font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Sel.</TableHead>
                                         <TableHead className="text-left font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Nombre</TableHead>
                                         <TableHead className="text-left font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Descripción</TableHead>
@@ -306,13 +306,13 @@ export default function SolicitudExamenes() {
                                     {listaExamenes.map((examen, i) => (
                                         <TableRow
                                             key={examen.id_examen}
-                                            className={"hover:bg-sky-50/50 transition-colors duration-100 cursor-pointer " + (id_examen === examen.id_examen ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-300' : (i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'))}
+                                            className={"hover:bg-violet-50/50 transition-colors duration-100 cursor-pointer " + (id_examen === examen.id_examen ? 'bg-emerald-50 ring-1 ring-inset ring-emerald-300' : (i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'))}
                                             onClick={() => seleccionarExamen(examen)}
                                         >
                                             <TableCell className="text-center px-3 py-2.5">
                                                 <button
                                                     onClick={(e) => { e.stopPropagation(); seleccionarExamen(examen); }}
-                                                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-sky-50 border border-sky-100 text-sky-600 hover:bg-sky-100 hover:text-sky-700 transition-colors duration-150"
+                                                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-violet-50 border border-violet-100 text-violet-600 hover:bg-violet-100 hover:text-violet-700 transition-colors duration-150"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
