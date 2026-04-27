@@ -204,12 +204,11 @@ export default function RecetaLentesPage() {
         if (error) return toast.error(error);
 
         try {
-            const doc = new jsPDF("p", "mm", "letter");
+            const doc = new jsPDF("p", "mm", "a5");
             const pageW = doc.internal.pageSize.getWidth();
             const pageH = doc.internal.pageSize.getHeight();
-            const margin = 18;
+            const margin = 12;
             const contentW = pageW - (margin * 2);
-            const accent = [67, 56, 202];
             const text = [15, 23, 42];
             const muted = [100, 116, 139];
             const line = [203, 213, 225];
@@ -219,13 +218,9 @@ export default function RecetaLentesPage() {
             doc.roundedRect(margin, 14, contentW, pageH - 28, 4, 4);
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(18);
+            doc.setFontSize(16);
             doc.setTextColor(...text);
             doc.text("RECETA DE LENTES", pageW / 2, 26, {align: "center"});
-
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(8.5);
-            doc.setTextColor(...muted);
 
             doc.setDrawColor(...line);
             doc.line(margin + 6, 36, pageW - margin - 6, 36);
@@ -242,95 +237,95 @@ export default function RecetaLentesPage() {
             doc.setFontSize(7.5);
             doc.setTextColor(...muted);
             doc.text("PACIENTE", margin + 10, metaBoxY + 6);
-            doc.text("RUT", margin + 96, metaBoxY + 6);
-            doc.text("PROFESIONAL", margin + 132, metaBoxY + 6);
+            doc.text("RUT", margin + 64, metaBoxY + 6);
+            doc.text("PROFESIONAL", margin + 98, metaBoxY + 6);
             doc.text("FECHA", margin + 10, metaBoxY + 17);
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(10);
+            doc.setFontSize(9);
             doc.setTextColor(...text);
             doc.text(valorVisual(formulario.nombrePaciente, "-"), margin + 10, metaBoxY + 13);
-            doc.text(valorVisual(formulario.rutPaciente, "-"), margin + 96, metaBoxY + 13);
-            doc.text(valorVisual(formulario.nombreProfesional, "-"), margin + 132, metaBoxY + 13);
+            doc.text(valorVisual(formulario.rutPaciente, "-"), margin + 64, metaBoxY + 13);
+            doc.text(valorVisual(formulario.nombreProfesional, "-"), margin + 98, metaBoxY + 13);
             doc.text(`FECHA: ${formatDateDashed(formulario.fechaEmision)}`, margin + 10, metaBoxY + 21);
 
             y = 82;
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(13);
+            doc.setFontSize(12);
             doc.setTextColor(...text);
             doc.text("PARA LEJOS", margin + 6, y);
-            drawTable(doc, margin + 20, y + 5, {
+            drawTable(doc, margin + 10, y + 5, {
                 od: formulario.lejosOd,
                 oi: formulario.lejosOi
             });
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.setTextColor(...text);
-            doc.text("DP pl:", pageW - margin - 48, y + 33);
-            doc.setDrawColor(180, 187, 200);
-            doc.line(pageW - margin - 25, y + 33.5, pageW - margin - 6, y + 33.5);
-            doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(valorVisual(formulario.dpLejos, ""), pageW - margin - 15.5, y + 31.8, {align: "center"});
+            doc.setTextColor(...text);
+            doc.text("DP pl:", pageW - margin - 34, y + 33);
+            doc.setDrawColor(180, 187, 200);
+            doc.line(pageW - margin - 18, y + 33.5, pageW - margin - 4, y + 33.5);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.text(valorVisual(formulario.dpLejos, ""), pageW - margin - 11, y + 31.8, {align: "center"});
 
             y = 124;
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(13);
+            doc.setFontSize(12);
             doc.setTextColor(...text);
             doc.text("PARA CERCA", margin + 6, y);
-            drawTable(doc, margin + 20, y + 5, {
+            drawTable(doc, margin + 10, y + 5, {
                 od: formulario.cercaOd,
                 oi: formulario.cercaOi
             });
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.setTextColor(...text);
-            doc.text("ADD", margin + 28, y + 43);
-            doc.line(margin + 44, y + 43.5, margin + 78, y + 43.5);
-            doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(valorVisual(formulario.add, ""), margin + 61, y + 41.8, {align: "center"});
+            doc.setTextColor(...text);
+            doc.text("ADD", margin + 12, y + 43);
+            doc.line(margin + 24, y + 43.5, margin + 48, y + 43.5);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.text(valorVisual(formulario.add, ""), margin + 36, y + 41.8, {align: "center"});
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
-            doc.text("DP pc:", pageW - margin - 48, y + 43);
-            doc.line(pageW - margin - 25, y + 43.5, pageW - margin - 6, y + 43.5);
-            doc.setFont("helvetica", "normal");
             doc.setFontSize(10);
-            doc.text(valorVisual(formulario.dpCerca, ""), pageW - margin - 15.5, y + 41.8, {align: "center"});
+            doc.text("DP pc:", pageW - margin - 34, y + 43);
+            doc.line(pageW - margin - 18, y + 43.5, pageW - margin - 4, y + 43.5);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8.5);
+            doc.text(valorVisual(formulario.dpCerca, ""), pageW - margin - 11, y + 41.8, {align: "center"});
 
             y = 179;
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(12);
+            doc.setFontSize(11);
             doc.setTextColor(...text);
             doc.text("OBSERVACIONES:", margin + 6, y);
             doc.setFont("helvetica", "normal");
-            doc.setFontSize(10);
+            doc.setFontSize(8.5);
             const observaciones = formulario.observaciones.trim() || formulario.notas.trim() || " ";
-            const observacionesLineas = doc.splitTextToSize(observaciones, contentW - 28);
+            const observacionesLineas = doc.splitTextToSize(observaciones, contentW - 20);
             doc.text(observacionesLineas, margin + 6, y + 8, {lineHeightFactor: 1.5});
 
-            const signatureY = pageH - 42;
+            const signatureY = pageH - 26;
             doc.setDrawColor(180, 187, 200);
-            doc.line(pageW - margin - 62, signatureY, pageW - margin - 6, signatureY);
-            doc.setFont("helvetica", "normal");
-            doc.setFontSize(9);
-            doc.setTextColor(...muted);
-            doc.text("Firma y timbre del profesional", pageW - margin - 34, signatureY + 6, {align: "center"});
-            doc.setTextColor(...text);
-            doc.text(valorVisual(formulario.nombreProfesional, ""), pageW - margin - 34, signatureY + 11, {align: "center"});
-
-            doc.setDrawColor(...line);
-            doc.line(margin + 6, pageH - 21, pageW - margin - 6, pageH - 21);
+            doc.line(pageW - margin - 54, signatureY, pageW - margin - 6, signatureY);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(7.5);
             doc.setTextColor(...muted);
-            doc.text("Uso clínico", pageW - margin - 6, pageH - 15, {align: "right"});
+            doc.text("Firma y timbre del profesional", pageW - margin - 30, signatureY + 5, {align: "center"});
+            doc.setTextColor(...text);
+            doc.text(valorVisual(formulario.nombreProfesional, ""), pageW - margin - 30, signatureY + 9, {align: "center"});
+
+            doc.setDrawColor(...line);
+            doc.line(margin + 6, pageH - 16, pageW - margin - 6, pageH - 16);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(7);
+            doc.setTextColor(...muted);
+            doc.text("Uso clínico", pageW - margin - 6, pageH - 11, {align: "right"});
 
             doc.save(`${nombreArchivo}.pdf`);
             toast.success("PDF generado correctamente.");
