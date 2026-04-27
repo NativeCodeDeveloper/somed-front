@@ -260,6 +260,8 @@ export default function FormularioReservaProfesional() {
         maximumFractionDigits: 0,
     });
 
+    const esAtencionFonasa = servicioSeleccionado.trim().toLowerCase().includes("fonasa");
+
 
 
 
@@ -316,6 +318,58 @@ export default function FormularioReservaProfesional() {
                                 className={tarifaSeleccionadaIndex !== "" ? "border-emerald-400 bg-emerald-50/50 font-medium text-slate-900" : ""}
                             />
                         </div>
+
+                        {esAtencionFonasa && (
+                            <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50/70 p-5 shadow-sm">
+                                <div className="flex items-start gap-3">
+                                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-xs font-bold text-white">
+                                        F
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h3 className="text-sm font-semibold text-slate-900">
+                                            Información para compra de bono Fonasa
+                                        </h3>
+                                        <p className="mt-1 text-sm leading-6 text-slate-600">
+                                            Antes de asistir, debes gestionar el bono con los siguientes datos.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                                    <div className="rounded-xl border border-white/70 bg-white/80 p-3">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">RUT</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">17.517.094-4</p>
+                                    </div>
+                                    <div className="rounded-xl border border-white/70 bg-white/80 p-3">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Código</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">1201027</p>
+                                    </div>
+                                    <div className="rounded-xl border border-white/70 bg-white/80 p-3">
+                                        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Valor</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">$6.600</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-3 rounded-xl border border-white/70 bg-white/80 p-3">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">A nombre de</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">Ivonne Orellana</p>
+                                </div>
+
+                                <div className="mt-4 rounded-xl border border-slate-200/70 bg-white/70 p-4">
+                                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Cómo obtenerlo</p>
+                                    <div className="mt-2 space-y-2 text-sm leading-6 text-slate-700">
+                                        <p>Llama al <span className="font-semibold text-slate-900">600 360 3000</span> para obtener el prefolio.</p>
+                                        <p>Puedes pagar el bono en <span className="font-semibold text-slate-900">Sencillito</span>, <span className="font-semibold text-slate-900">Caja Vecina</span> o directamente en sucursales Fonasa.</p>
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 rounded-xl border border-red-200 bg-red-50/80 p-4">
+                                    <p className="text-sm font-semibold text-red-800">
+                                        El bono no se compra por la web ni en la consulta.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Datos personales */}
