@@ -163,9 +163,9 @@ export default function RecetaLentesPage() {
     }
 
     function drawTable(doc, startX, startY, values) {
-        const labelW = 20;
-        const colW = 30;
-        const rowH = 10;
+        const labelW = 18;
+        const colW = 23;
+        const rowH = 9;
         const totalW = labelW + (colW * 3);
 
         doc.setDrawColor(207, 216, 227);
@@ -179,7 +179,7 @@ export default function RecetaLentesPage() {
         doc.line(startX, startY + (rowH * 2), startX + totalW, startY + (rowH * 2));
 
         doc.setFont("helvetica", "bold");
-        doc.setFontSize(10.5);
+        doc.setFontSize(9.5);
         doc.setTextColor(55, 65, 81);
         doc.text("ESF", startX + labelW + (colW / 2), startY + 6.4, {align: "center"});
         doc.text("CYL", startX + labelW + colW + (colW / 2), startY + 6.4, {align: "center"});
@@ -189,6 +189,7 @@ export default function RecetaLentesPage() {
         doc.text("OI", startX + (labelW / 2), startY + (rowH * 2) + 6.4, {align: "center"});
 
         doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
         doc.setTextColor(17, 24, 39);
         doc.text(valorVisual(values.od.esf, ""), startX + labelW + (colW / 2), startY + rowH + 6.4, {align: "center"});
         doc.text(valorVisual(values.od.cyl, ""), startX + labelW + colW + (colW / 2), startY + rowH + 6.4, {align: "center"});
@@ -207,7 +208,7 @@ export default function RecetaLentesPage() {
             const doc = new jsPDF("p", "mm", "a5");
             const pageW = doc.internal.pageSize.getWidth();
             const pageH = doc.internal.pageSize.getHeight();
-            const margin = 12;
+            const margin = 14;
             const contentW = pageW - (margin * 2);
             const text = [15, 23, 42];
             const muted = [100, 116, 139];
@@ -227,27 +228,32 @@ export default function RecetaLentesPage() {
 
             let y = 45;
             const metaBoxY = y;
+            const metaX = margin + 8;
+            const metaW = contentW - 16;
+            const patientX = metaX + 4;
+            const rutX = metaX + 60;
+            const professionalX = metaX + 94;
 
             doc.setFillColor(248, 250, 252);
-            doc.roundedRect(margin + 6, metaBoxY, contentW - 12, 24, 3, 3, "F");
+            doc.roundedRect(metaX, metaBoxY, metaW, 24, 3, 3, "F");
             doc.setDrawColor(226, 232, 240);
-            doc.roundedRect(margin + 6, metaBoxY, contentW - 12, 24, 3, 3);
+            doc.roundedRect(metaX, metaBoxY, metaW, 24, 3, 3);
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(7.5);
             doc.setTextColor(...muted);
-            doc.text("PACIENTE", margin + 10, metaBoxY + 6);
-            doc.text("RUT", margin + 64, metaBoxY + 6);
-            doc.text("PROFESIONAL", margin + 98, metaBoxY + 6);
-            doc.text("FECHA", margin + 10, metaBoxY + 17);
+            doc.text("PACIENTE", patientX, metaBoxY + 6);
+            doc.text("RUT", rutX, metaBoxY + 6);
+            doc.text("PROFESIONAL", professionalX, metaBoxY + 6);
+            doc.text("FECHA", patientX, metaBoxY + 17);
 
             doc.setFont("helvetica", "bold");
-            doc.setFontSize(9);
+            doc.setFontSize(8.2);
             doc.setTextColor(...text);
-            doc.text(valorVisual(formulario.nombrePaciente, "-"), margin + 10, metaBoxY + 13);
-            doc.text(valorVisual(formulario.rutPaciente, "-"), margin + 64, metaBoxY + 13);
-            doc.text(valorVisual(formulario.nombreProfesional, "-"), margin + 98, metaBoxY + 13);
-            doc.text(`FECHA: ${formatDateDashed(formulario.fechaEmision)}`, margin + 10, metaBoxY + 21);
+            doc.text(doc.splitTextToSize(valorVisual(formulario.nombrePaciente, "-"), 42), patientX, metaBoxY + 12.5);
+            doc.text(doc.splitTextToSize(valorVisual(formulario.rutPaciente, "-"), 28), rutX, metaBoxY + 12.5);
+            doc.text(doc.splitTextToSize(valorVisual(formulario.nombreProfesional, "-"), 26), professionalX, metaBoxY + 12.5);
+            doc.text(`FECHA: ${formatDateDashed(formulario.fechaEmision)}`, patientX, metaBoxY + 21);
 
             y = 82;
 
@@ -263,12 +269,12 @@ export default function RecetaLentesPage() {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.setTextColor(...text);
-            doc.text("DP pl:", pageW - margin - 34, y + 33);
+            doc.text("DP pl:", pageW - margin - 34, y + 37);
             doc.setDrawColor(180, 187, 200);
-            doc.line(pageW - margin - 18, y + 33.5, pageW - margin - 4, y + 33.5);
+            doc.line(pageW - margin - 18, y + 37.5, pageW - margin - 4, y + 37.5);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8.5);
-            doc.text(valorVisual(formulario.dpLejos, ""), pageW - margin - 11, y + 31.8, {align: "center"});
+            doc.text(valorVisual(formulario.dpLejos, ""), pageW - margin - 11, y + 35.8, {align: "center"});
 
             y = 124;
 
@@ -284,19 +290,19 @@ export default function RecetaLentesPage() {
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
             doc.setTextColor(...text);
-            doc.text("ADD", margin + 12, y + 43);
-            doc.line(margin + 24, y + 43.5, margin + 48, y + 43.5);
+            doc.text("ADD", margin + 12, y + 40);
+            doc.line(margin + 24, y + 40.5, margin + 48, y + 40.5);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8.5);
-            doc.text(valorVisual(formulario.add, ""), margin + 36, y + 41.8, {align: "center"});
+            doc.text(valorVisual(formulario.add, ""), margin + 36, y + 38.8, {align: "center"});
 
             doc.setFont("helvetica", "bold");
             doc.setFontSize(10);
-            doc.text("DP pc:", pageW - margin - 34, y + 43);
-            doc.line(pageW - margin - 18, y + 43.5, pageW - margin - 4, y + 43.5);
+            doc.text("DP pc:", pageW - margin - 34, y + 40);
+            doc.line(pageW - margin - 18, y + 40.5, pageW - margin - 4, y + 40.5);
             doc.setFont("helvetica", "normal");
             doc.setFontSize(8.5);
-            doc.text(valorVisual(formulario.dpCerca, ""), pageW - margin - 11, y + 41.8, {align: "center"});
+            doc.text(valorVisual(formulario.dpCerca, ""), pageW - margin - 11, y + 38.8, {align: "center"});
 
             y = 179;
 
