@@ -29,8 +29,8 @@ const localizer = dateFnsLocalizer({
     getDay,
     locales,
 });
-const HORA_MINIMA_AGENDA = 7;
-const HORA_MAXIMA_AGENDA = 23;
+const HORA_MINIMA_AGENDA = 9;
+const HORA_MAXIMA_AGENDA = 20;
 
 function crearHoraLimite(hora, minuto = 0, segundo = 0) {
     const fecha = new Date();
@@ -101,6 +101,9 @@ export default function Calendario() {
                 -webkit-overflow-scrolling: touch !important;
                 touch-action: pan-y !important;
                 overscroll-behavior: contain !important;
+            }
+            .rbc-time-view .rbc-timeslot-group {
+                min-height: 44px !important;
             }
             .rbc-time-slot {
                 transition: background-color 120ms ease !important;
@@ -1018,14 +1021,14 @@ export default function Calendario() {
                             min={crearHoraLimite(HORA_MINIMA_AGENDA)}
                             max={crearHoraLimite(HORA_MAXIMA_AGENDA)}
                             scrollToTime={crearHoraLimite(HORA_MINIMA_AGENDA)}
-                            step={30}
-                            timeslots={2}
+                            step={15}
+                            timeslots={1}
                             longPressThreshold={esMobile ? 300 : 10}
                             onSelecting={(slot) => {
                                 const start = slot.start ?? slot;
                                 const end = slot.end ?? slot;
                                 if (!estaDentroHorarioAgenda(start, end)) {
-                                    toast.error("Solo puedes visualizar y seleccionar entre 07:00 y 23:00 horas.");
+                                    toast.error("Solo puedes visualizar y seleccionar entre 09:00 y 20:00 horas.");
                                     return false;
                                 }
                                 if (isOverlapping(start, end)) {
@@ -1050,7 +1053,7 @@ export default function Calendario() {
                                 const start = slotInfo.start ?? slotInfo;
                                 const end = slotInfo.end ?? slotInfo;
                                 if (!estaDentroHorarioAgenda(start, end)) {
-                                    toast.error("Solo puedes visualizar y seleccionar entre 07:00 y 23:00 horas.");
+                                    toast.error("Solo puedes visualizar y seleccionar entre 09:00 y 20:00 horas.");
                                     return;
                                 }
                                 if (isOverlapping(start, end)) {

@@ -23,8 +23,8 @@ const locales = {es: es};
 const dfStartOfWeek = (date) => startOfWeek(date, {locale: es});
 const localizer = dateFnsLocalizer({format, parse, startOfWeek: dfStartOfWeek, getDay, locales});
 const DnDCalendar = withDragAndDrop(Calendar);
-const HORA_MINIMA_AGENDA = 7;
-const HORA_MAXIMA_AGENDA = 23;
+const HORA_MINIMA_AGENDA = 9;
+const HORA_MAXIMA_AGENDA = 20;
 
 function crearHoraLimite(hora, minuto = 0, segundo = 0) {
     const fecha = new Date();
@@ -106,6 +106,9 @@ function CalendarioContent() {
                 -webkit-overflow-scrolling: touch !important;
                 touch-action: pan-y !important;
                 overscroll-behavior: contain !important;
+            }
+            .rbc-time-view .rbc-timeslot-group {
+                min-height: 44px !important;
             }
             .rbc-time-slot {
                 transition: background-color 120ms ease !important;
@@ -462,6 +465,55 @@ function CalendarioContent() {
         });
     }
 
+    function actualizarBorradorSeleccion(start, end) {
+        const nextDraft = {
+            start,
+            end,
+            profesional: obtenerNombreProfesionalSeleccionado(),
+        };
+
+        setSelectionDraft(nextDraft);
+        setFloatingDraft({
+            id: "draft-selection",
+            title: "Nuevo agendamiento",
+            start,
+            end,
+            tipo: "seleccion",
+        });
+        setfechaInicio(formatearFechaLocal(start));
+        setHoraInicio(start.toTimeString().slice(0, 8));
+        setfechaFinalizacion(formatearFechaLocal(end));
+        setHoraFinalizacion(end.toTimeString().slice(0, 8));
+    }
+
+    function actualizarHoraSeleccionDraft(campo, valorHora) {
+        if (!selectionDraft || !valorHora) return;
+
+        const [horas, minutos] = valorHora.split(":").map(Number);
+        if (Number.isNaN(horas) || Number.isNaN(minutos)) return;
+
+        const nuevoInicio = new Date(selectionDraft.start);
+        const nuevoFin = new Date(selectionDraft.end);
+
+        if (campo === "start") {
+            nuevoInicio.setHours(horas, minutos, 0, 0);
+        } else {
+            nuevoFin.setHours(horas, minutos, 0, 0);
+        }
+
+        if (!estaDentroHorarioAgenda(nuevoInicio, nuevoFin)) {
+            toast.error("Solo puedes agendar entre 09:00 y 20:00 horas, con un rango valido.");
+            return;
+        }
+
+        if (isOverlapping(nuevoInicio, nuevoFin)) {
+            toast.error("La hora ajustada se superpone con otra reserva o bloqueo.");
+            return;
+        }
+
+        actualizarBorradorSeleccion(nuevoInicio, nuevoFin);
+    }
+
     function validarSeleccionPrevia(start, end, ignoredReservaId = null) {
         if (!id_profesional) {
             if (!selectionGuardRef.current.missingProfessional) {
@@ -476,7 +528,7 @@ function CalendarioContent() {
         }
 
         if (!estaDentroHorarioAgenda(start, end)) {
-            toast.error("Solo puedes agendar entre 07:00 y 23:00 horas.");
+            toast.error("Solo puedes agendar entre 09:00 y 20:00 horas.");
             setSelectionPreview(null);
             return false;
         }
@@ -627,7 +679,7 @@ function CalendarioContent() {
                 return false;
             }
             if (!estaDentroHorarioAgenda(inicio, final)) {
-                toast.error("Solo puedes agendar entre 07:00 y 23:00 horas.");
+                toast.error("Solo puedes agendar entre 09:00 y 20:00 horas.");
                 return false;
             }
             if (final < inicio) {
@@ -780,7 +832,7 @@ function CalendarioContent() {
             const inicio = new Date(`${fechaInicio}T${horaInicio}`);
             const final = new Date(`${fechaFinalizacion}T${horaFinalizacion}`);
             if (!estaDentroHorarioAgenda(inicio, final)) {
-                return toast.error("Solo puedes bloquear horarios entre 07:00 y 23:00 horas.");
+                return toast.error("Solo puedes bloquear horarios entre 09:00 y 20:00 horas.");
             }
 
             const res = await fetch(`${API}/bloqueoAgenda/InsertarBloqueo`, {
@@ -1584,8 +1636,8 @@ function CalendarioContent() {
                             min={crearHoraLimite(HORA_MINIMA_AGENDA)}
                             max={crearHoraLimite(HORA_MAXIMA_AGENDA)}
                             scrollToTime={crearHoraLimite(HORA_MINIMA_AGENDA)}
-                            step={30}
-                            timeslots={2}
+                            step={15}
+                            timeslots={1}
                             draggableAccessor={(event) => event.tipo === "reserva"}
                             resizableAccessor={(event) => event.tipo === "reserva"}
                             longPressThreshold={esMobile ? 300 : 10}
@@ -1667,10 +1719,24 @@ function CalendarioContent() {
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Inicio</div>
                                     <div className="mt-1 font-semibold text-violet-700">{formatHoraCorta(selectionDraft.start)}</div>
+                                    <input
+                                        type="time"
+                                        step="900"
+                                        value={format(selectionDraft.start, "HH:mm")}
+                                        onChange={(e) => actualizarHoraSeleccionDraft("start", e.target.value)}
+                                        className="mt-2 h-9 w-full rounded-xl border border-violet-200 bg-white px-3 text-[12px] font-medium text-slate-800 outline-none transition-all focus:border-violet-300 focus:ring-4 focus:ring-violet-100"
+                                    />
                                 </div>
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Termino</div>
                                     <div className="mt-1 font-semibold text-violet-700">{formatHoraCorta(selectionDraft.end)}</div>
+                                    <input
+                                        type="time"
+                                        step="900"
+                                        value={format(selectionDraft.end, "HH:mm")}
+                                        onChange={(e) => actualizarHoraSeleccionDraft("end", e.target.value)}
+                                        className="mt-2 h-9 w-full rounded-xl border border-violet-200 bg-white px-3 text-[12px] font-medium text-slate-800 outline-none transition-all focus:border-violet-300 focus:ring-4 focus:ring-violet-100"
+                                    />
                                 </div>
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Fecha</div>
