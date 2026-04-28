@@ -30,6 +30,19 @@ export default function CalendarioMensualHoras() {
     const API = process.env.NEXT_PUBLIC_API_URL;
     
     const router = useRouter();
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const maxFutureDate = new Date(todayStart);
+    maxFutureDate.setMonth(maxFutureDate.getMonth() + 2);
+    const maxMonthStart = new Date(maxFutureDate.getFullYear(), maxFutureDate.getMonth(), 1);
+
+    const limpiarSeleccionAgenda = () => {
+        setFechaSeleccionada(null);
+        setHoraInicio("");
+        setHoraFin("");
+        setFechaInicio("");
+        setFechaFinalizacion("");
+    };
     
     function formularioReservaProfesional(id_profesional) {
         router.push(`/formularioReservaProfesional/${id_profesional}`);
@@ -124,13 +137,16 @@ export default function CalendarioMensualHoras() {
 
     /* ---------- handlers ---------- */
     const seleccionarFecha = (fecha) => {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
         const day = new Date(fecha);
         day.setHours(0, 0, 0, 0);
 
-        if (day < today) {
+        if (day < todayStart) {
             toast.error("No puedes agendar en fechas pasadas");
+            return;
+        }
+
+        if (day > maxFutureDate) {
+            toast.error("Solo puedes agendar hasta 2 meses hacia adelante");
             return;
         }
 
@@ -418,12 +434,9 @@ export default function CalendarioMensualHoras() {
                         <button
                             className="rounded-lg border border-gray-900 bg-gray-900 px-2.5 py-1 text-xs font-semibold text-white shadow-md shadow-slate-900/5 hover:bg-gray-800 active:scale-[0.98] hover:shadow-lg hover:shadow-slate-900/10"
                             onClick={() => {
-                                setMesActual(new Date(mesActual.setMonth(mesActual.getMonth() - 1)));
-                                setFechaSeleccionada(null);
-                                setHoraInicio("");
-                                setHoraFin("");
-                                setFechaInicio("");
-                                setFechaFinalizacion("");
+                                const previousMonth = new Date(mesActual.getFullYear(), mesActual.getMonth() - 1, 1);
+                                setMesActual(previousMonth);
+                                limpiarSeleccionAgenda();
                             }}
                         >
                             ←
@@ -432,14 +445,24 @@ export default function CalendarioMensualHoras() {
                             {mesActual.toLocaleString("es-CL", {month: "long", year: "numeric"})}
                         </strong>
                         <button
-                            className="rounded-lg border border-gray-900 bg-gray-900 px-2.5 py-1 text-xs font-semibold text-white shadow-md shadow-slate-900/5 hover:bg-gray-800 active:scale-[0.98] hover:shadow-lg hover:shadow-slate-900/10"
+                            className={"rounded-lg border px-2.5 py-1 text-xs font-semibold shadow-md shadow-slate-900/5 active:scale-[0.98] " + (
+                                mesActual.getFullYear() === maxMonthStart.getFullYear() &&
+                                mesActual.getMonth() === maxMonthStart.getMonth()
+                                    ? "cursor-not-allowed border-slate-200 bg-slate-200 text-slate-400 shadow-none"
+                                    : "border-gray-900 bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg hover:shadow-slate-900/10"
+                            )}
+                            disabled={
+                                mesActual.getFullYear() === maxMonthStart.getFullYear() &&
+                                mesActual.getMonth() === maxMonthStart.getMonth()
+                            }
                             onClick={() => {
-                                setMesActual(new Date(mesActual.setMonth(mesActual.getMonth() + 1)));
-                                setFechaSeleccionada(null);
-                                setHoraInicio("");
-                                setHoraFin("");
-                                setFechaInicio("");
-                                setFechaFinalizacion("");
+                                const nextMonth = new Date(mesActual.getFullYear(), mesActual.getMonth() + 1, 1);
+                                if (nextMonth > maxMonthStart) {
+                                    toast.error("Solo puedes avanzar hasta 2 meses hacia adelante");
+                                    return;
+                                }
+                                setMesActual(nextMonth);
+                                limpiarSeleccionAgenda();
                             }}
                         >
                             →
@@ -455,13 +478,12 @@ export default function CalendarioMensualHoras() {
 
                         {dias.map((dia, i) =>
                             dia ? (() => {
-                                const today = new Date();
-                                today.setHours(0, 0, 0, 0);
                                 const day = new Date(dia);
                                 day.setHours(0, 0, 0, 0);
-                                const isPastDay = day < today;
+                                const isPastDay = day < todayStart;
+                                const isAfterMaxFuture = day > maxFutureDate;
                                 const isSunday = dia.getDay() === 0;
-                                const isDisabled = isPastDay || isSunday;
+                                const isDisabled = isPastDay || isSunday || isAfterMaxFuture;
                                 const isSelected = fechaSeleccionada?.toDateString() === dia.toDateString();
 
                                 return (
