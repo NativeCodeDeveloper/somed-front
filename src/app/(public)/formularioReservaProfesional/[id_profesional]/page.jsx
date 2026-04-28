@@ -262,6 +262,26 @@ export default function FormularioReservaProfesional() {
 
     const esAtencionFonasa = servicioSeleccionado.trim().toLowerCase().includes("fonasa");
 
+    const profesionalFonasaNormalizado = profesionalSeleccionado
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+    const datosFonasaProfesional = profesionalFonasaNormalizado.includes("jaime") && profesionalFonasaNormalizado.includes("orell")
+        ? {
+            rut: "19422184-3",
+            nombre: "Jaime Orellana Machuca",
+        }
+        : profesionalFonasaNormalizado.includes("ivonne") && profesionalFonasaNormalizado.includes("orell")
+            ? {
+                rut: "17.517.094-4",
+                nombre: "Ivonne Orellana Machuca",
+            }
+            : {
+                rut: "17.517.094-4",
+                nombre: profesionalSeleccionado || "Ivonne Orellana Machuca",
+            };
+
 
 
 
@@ -338,7 +358,7 @@ export default function FormularioReservaProfesional() {
                                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                                     <div className="rounded-xl border border-white/70 bg-white/80 p-3">
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">RUT</p>
-                                        <p className="mt-1 text-sm font-semibold text-slate-900">17.517.094-4</p>
+                                        <p className="mt-1 text-sm font-semibold text-slate-900">{datosFonasaProfesional.rut}</p>
                                     </div>
                                     <div className="rounded-xl border border-white/70 bg-white/80 p-3">
                                         <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Código</p>
@@ -352,7 +372,7 @@ export default function FormularioReservaProfesional() {
 
                                 <div className="mt-3 rounded-xl border border-white/70 bg-white/80 p-3">
                                     <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">A nombre de</p>
-                                    <p className="mt-1 text-sm font-semibold text-slate-900">Ivonne Orellana</p>
+                                    <p className="mt-1 text-sm font-semibold text-slate-900">{datosFonasaProfesional.nombre}</p>
                                 </div>
 
                                 <div className="mt-4 rounded-xl border border-slate-200/70 bg-white/70 p-4">

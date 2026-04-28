@@ -846,31 +846,70 @@ function CalendarioContent() {
         setBackgroundCalendarEvents(eventosBloqueos);
     }, [dataAgenda, dataBloqueos, currentView]);
 
-    const eventStyleGetter = (event) => {
-        const esBloqueo = event.tipo === "bloqueo";
-        const esSeleccion = event.tipo === "seleccion";
-        const esVistaMes = currentView === "month";
-        const estadoReservaNormalizado = event.resource?.estadoReserva?.toLowerCase?.() ?? "";
-        const paletteReserva = estadoReservaNormalizado === "confirmada"
-            ? {
+    function obtenerPaletaEstadoReserva(estadoReserva = "") {
+        const estadoNormalizado = estadoReserva
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+
+        if (estadoNormalizado === "asiste") {
+            return {
+                backgroundColor: "rgba(34, 211, 238, 0.20)",
+                color: "#0f766e",
+                accentColor: "#0891b2",
+                borderColor: "rgba(6, 182, 212, 0.30)"
+            };
+        }
+
+        if (estadoNormalizado === "no asiste" || estadoNormalizado === "no asistio" || estadoNormalizado === "no asistste") {
+            return {
+                backgroundColor: "rgba(244, 114, 182, 0.18)",
+                color: "#9d174d",
+                accentColor: "#db2777",
+                borderColor: "rgba(236, 72, 153, 0.28)"
+            };
+        }
+
+        if (estadoNormalizado === "finalizado") {
+            return {
+                backgroundColor: "rgba(251, 146, 60, 0.18)",
+                color: "#9a3412",
+                accentColor: "#ea580c",
+                borderColor: "rgba(249, 115, 22, 0.28)"
+            };
+        }
+
+        if (estadoNormalizado === "confirmada") {
+            return {
                 backgroundColor: "rgba(34, 197, 94, 0.22)",
                 color: "#14532d",
                 accentColor: "#166534",
                 borderColor: "rgba(34, 197, 94, 0.30)"
-            }
-            : estadoReservaNormalizado === "anulada"
-                ? {
-                    backgroundColor: "rgba(244, 63, 94, 0.18)",
-                    color: "#881337",
-                    accentColor: "#881337",
-                    borderColor: "rgba(225, 29, 72, 0.28)"
-                }
-                : {
-                    backgroundColor: "rgba(124, 58, 237, 0.20)",
-                    color: "#5b21b6",
-                    accentColor: "#5b21b6",
-                    borderColor: "rgba(124, 58, 237, 0.28)"
-                };
+            };
+        }
+
+        if (estadoNormalizado === "anulada") {
+            return {
+                backgroundColor: "rgba(244, 63, 94, 0.18)",
+                color: "#881337",
+                accentColor: "#881337",
+                borderColor: "rgba(225, 29, 72, 0.28)"
+            };
+        }
+
+        return {
+            backgroundColor: "rgba(124, 58, 237, 0.20)",
+            color: "#5b21b6",
+            accentColor: "#5b21b6",
+            borderColor: "rgba(124, 58, 237, 0.28)"
+        };
+    }
+
+    const eventStyleGetter = (event) => {
+        const esBloqueo = event.tipo === "bloqueo";
+        const esSeleccion = event.tipo === "seleccion";
+        const esVistaMes = currentView === "month";
+        const paletteReserva = obtenerPaletaEstadoReserva(event.resource?.estadoReserva);
 
         if (esBloqueo) {
             return {
@@ -985,7 +1024,8 @@ function CalendarioContent() {
     async function actualizarInformacionReserva(nombrePaciente, apellidoPaciente, rut, telefono, email, fechaInicio, horaInicio, fechaFinalizacion, horaFinalizacion, estadoReserva, id_profesional, id_reserva) {
         try {
             if (!nombrePaciente || !apellidoPaciente || !rut || !telefono || !email || !fechaInicio || !horaInicio || !fechaFinalizacion || !horaFinalizacion || !estadoReserva || !id_profesional || !id_reserva) {
-                return toast.error("Debe llenar todos los campos para poder actualizar la reserva");
+                toast.error("Debe llenar todos los campos para poder actualizar la reserva");
+                return false;
             }
             const res = await fetch(`${API}/reservaPacientes/actualizarReservacion`, {
                 method: "POST",
@@ -993,16 +1033,22 @@ function CalendarioContent() {
                 mode: "cors",
                 body: JSON.stringify({nombrePaciente, apellidoPaciente, rut, telefono, email, fechaInicio, horaInicio, fechaFinalizacion, horaFinalizacion, estadoReserva, id_profesional, id_reserva})
             });
-            if (!res.ok) return toast.error("El servidor no responde");
+            if (!res.ok) {
+                toast.error("El servidor no responde");
+                return false;
+            }
             const respuestaBackend = await res.json();
             if (respuestaBackend.message === true) {
                 setNombrePaciente(""); setApellidoPaciente(""); setTelefono(""); setRut(""); setEmail("");
                 await refrescarCalendario();
-                return toast.success("Se ha actualizado la reserva correctamente");
+                toast.success("Se ha actualizado la reserva correctamente");
+                return true;
             }
+            return false;
         } catch (error) {
             console.log(error);
-            return toast.error(error.message);
+            toast.error(error.message);
+            return false;
         }
     }
 
@@ -1043,6 +1089,33 @@ function CalendarioContent() {
 
     function limpiarData() {
         setNombrePaciente(""); setApellidoPaciente(""); setTelefono(""); setRut(""); setEmail("");
+    }
+
+    async function cambiarEstadoRapido(estadoNuevo) {
+        const nombreCompleto = `${nombrePaciente ?? ""} ${apellidoPaciente ?? ""}`.trim();
+        if (!id_reserva || !nombreCompleto) {
+            return toast.error("Debe seleccionar un paciente para cambiar su estado");
+        }
+
+        const actualizado = await actualizarInformacionReserva(
+            nombrePaciente,
+            apellidoPaciente,
+            rut,
+            telefono,
+            email,
+            fechaInicio,
+            horaInicio,
+            fechaFinalizacion,
+            horaFinalizacion,
+            estadoNuevo,
+            id_profesional,
+            id_reserva
+        );
+
+        if (actualizado) {
+            setEstadoReserva(estadoNuevo);
+            await seleccionarReservaEspecifica(id_reserva);
+        }
     }
 
     function iniciarDragPopup(event) {
@@ -1305,6 +1378,29 @@ function CalendarioContent() {
                                 <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-700">Acciones</h3>
                                 <p className="mt-0.5 text-xs text-slate-500">Crear, editar, limpiar o eliminar la reserva activa.</p>
                             </div>
+                            <div className="mb-4 flex flex-wrap gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => cambiarEstadoRapido("asiste")}
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-200/80 border-l-[4px] border-l-cyan-500 bg-cyan-50/80 px-4 py-2.5 text-sm font-semibold text-cyan-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-cyan-100"
+                                >
+                                    Asiste
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => cambiarEstadoRapido("no asiste")}
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-pink-200/80 border-l-[4px] border-l-pink-500 bg-pink-50/80 px-4 py-2.5 text-sm font-semibold text-pink-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-pink-100"
+                                >
+                                    No asiste
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => cambiarEstadoRapido("finalizado")}
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-orange-200/80 border-l-[4px] border-l-orange-500 bg-orange-50/80 px-4 py-2.5 text-sm font-semibold text-orange-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-orange-100"
+                                >
+                                    Finalizado
+                                </button>
+                            </div>
                             <div className="flex flex-wrap gap-2">
                                 <button
                                     onClick={ingresarPacienteDesdeAgenda}
@@ -1380,6 +1476,18 @@ function CalendarioContent() {
                             <div className="flex items-center gap-1.5">
                                 <span className="inline-block w-3 h-3 rounded bg-rose-800"></span>
                                 <span className="text-xs text-slate-500">Anulada</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="inline-block w-3 h-3 rounded bg-cyan-500"></span>
+                                <span className="text-xs text-slate-500">Asiste</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="inline-block w-3 h-3 rounded bg-pink-500"></span>
+                                <span className="text-xs text-slate-500">No asiste</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="inline-block w-3 h-3 rounded bg-orange-500"></span>
+                                <span className="text-xs text-slate-500">Finalizado</span>
                             </div>
                             <div className="flex items-center gap-1.5">
                                 <span className="inline-block h-3 w-3 rounded border border-slate-500/60 bg-slate-500/50"></span>
