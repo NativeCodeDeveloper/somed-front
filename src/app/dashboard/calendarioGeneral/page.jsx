@@ -82,6 +82,11 @@ export default function Calendario() {
                 letter-spacing: 0.08em !important;
                 background: rgba(248, 250, 252, 0.85) !important;
             }
+            .rbc-time-view .rbc-header,
+            .rbc-time-view .rbc-time-gutter .rbc-label,
+            .rbc-time-view .rbc-time-slot {
+                font-size: 14.4px !important;
+            }
             .rbc-time-header-content,
             .rbc-time-content,
             .rbc-time-view,
@@ -138,11 +143,13 @@ export default function Calendario() {
             .rbc-time-view .rbc-event {
                 min-height: 0 !important; padding: 1px 2px !important;
                 line-height: 1.1 !important; white-space: normal !important; overflow: hidden !important; word-break: break-word !important;
-                font-size: 40% !important;
+                font-size: 48% !important;
             }
             .rbc-month-view .rbc-day-slot { min-height: 80px !important; }
             .rbc-row-segment { z-index: 1 !important; }
             .rbc-event-label, .rbc-event-content { white-space: normal !important; overflow: visible !important; word-break: break-word !important; font-size: 40% !important; }
+            .rbc-time-view .rbc-event-label,
+            .rbc-time-view .rbc-event-content { font-size: 48% !important; }
             .rbc-event-label { display: none !important; }
             @media (max-width: 767px) {
                 .rbc-time-view,
