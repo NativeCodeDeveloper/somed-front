@@ -29,6 +29,14 @@ const localizer = dateFnsLocalizer({
     getDay,
     locales,
 });
+const HORA_MINIMA_AGENDA = 7;
+const HORA_MAXIMA_AGENDA = 23;
+
+function crearHoraLimite(hora, minuto = 0, segundo = 0) {
+    const fecha = new Date();
+    fecha.setHours(hora, minuto, segundo, 0);
+    return fecha;
+}
 
 export default function Calendario() {
 
@@ -250,6 +258,18 @@ export default function Calendario() {
     function convertirAFechaCalendario(fechaISO, hora) {
         const soloFecha = fechaISO.slice(0, 10);
         return new Date(`${soloFecha}T${hora}`);
+    }
+
+    function estaDentroHorarioAgenda(start, end) {
+        if (!(start instanceof Date) || Number.isNaN(start.getTime())) return false;
+        if (!(end instanceof Date) || Number.isNaN(end.getTime())) return false;
+
+        const minutosInicio = start.getHours() * 60 + start.getMinutes();
+        const minutosFin = end.getHours() * 60 + end.getMinutes();
+        const minimo = HORA_MINIMA_AGENDA * 60;
+        const maximo = HORA_MAXIMA_AGENDA * 60;
+
+        return minutosInicio >= minimo && minutosFin <= maximo && end > start;
     }
 
     // Helper: comprueba si un rango [start, end) se solapa con alguna reserva en dataAgenda
@@ -520,7 +540,7 @@ export default function Calendario() {
         }));
         const eventosBloqueos = expandirBloqueosPorDia(dataBloqueos || []).map((bloqueo) => ({
             ...bloqueo,
-            allDay: currentView === "month",
+            allDay: false,
         }));
 
         if (currentView === "month") {
@@ -695,11 +715,12 @@ export default function Calendario() {
     );
 
 
-    async function actualizarInformacionReserva(nombrePaciente, apellidoPaciente, rut, telefono, email, fechaInicio, horaInicio, fechaFinalizacion, horaFinalizacion, estadoReserva, id_reserva) {
+    async function actualizarInformacionReserva(nombrePaciente, apellidoPaciente, rut, telefono, email, fechaInicio, horaInicio, fechaFinalizacion, horaFinalizacion, estadoReserva, id_profesional, id_reserva) {
         try {
 
-            if (!nombrePaciente || !apellidoPaciente || !rut || !telefono || !email || !fechaInicio || !horaInicio || !fechaFinalizacion || !horaFinalizacion || !estadoReserva || !id_reserva) {
-                return toast.error("Debe llenar todos los campos para poder actualizar la reserva")
+            if (!nombrePaciente || !apellidoPaciente || !rut || !telefono || !email || !fechaInicio || !horaInicio || !fechaFinalizacion || !horaFinalizacion || !estadoReserva || !id_profesional || !id_reserva) {
+                toast.error("Debe llenar todos los campos para poder actualizar la reserva");
+                return false;
             }
 
             const res = await fetch(`${API}/reservaPacientes/actualizarReservacion`, {
@@ -717,12 +738,14 @@ export default function Calendario() {
                     fechaFinalizacion,
                     horaFinalizacion,
                     estadoReserva,
+                    id_profesional,
                     id_reserva
                 })
             });
 
             if (!res.ok) {
-                return toast.error("El servidor no responde")
+                toast.error("El servidor no responde");
+                return false;
             } else {
 
                 const respuestaBackend = await res.json();
@@ -732,16 +755,19 @@ export default function Calendario() {
                     setTelefono("");
                     setRut("");
                     setEmail("");
-                    await refrescarCalendario()
-                    return toast.success("Se ha actualizado la reserva correctamente")
+                    await refrescarCalendario();
+                    toast.success("Se ha actualizado la reserva correctamente");
+                    return true;
                 }
             }
 
 
         } catch (error) {
             console.log(error);
-            return toast.error(error.message);
+            toast.error(error.message);
+            return false;
         }
+        return false;
     }
 
 
@@ -791,6 +817,7 @@ export default function Calendario() {
             setfechaFinalizacion((reserva.fechaFinalizacion ?? "").slice(0, 10));
             setHoraFinalizacion(reserva.horaFinalizacion ?? "");
             setEstadoReserva(reserva.estadoReserva ?? "");
+            setId_profesional(reserva.id_profesional ?? "");
 
         } catch (error) {
             console.log(error);
@@ -813,6 +840,33 @@ export default function Calendario() {
         setEmail("");
     }
 
+    async function cambiarEstadoRapido(estadoNuevo) {
+        const nombreCompleto = `${nombrePaciente ?? ""} ${apellidoPaciente ?? ""}`.trim();
+        if (!id_reserva || !nombreCompleto) {
+            return toast.error("Debe seleccionar un paciente para cambiar su estado");
+        }
+
+        const actualizado = await actualizarInformacionReserva(
+            nombrePaciente,
+            apellidoPaciente,
+            rut,
+            telefono,
+            email,
+            fechaInicio,
+            horaInicio,
+            fechaFinalizacion,
+            horaFinalizacion,
+            estadoNuevo,
+            id_profesional,
+            id_reserva
+        );
+
+        if (actualizado) {
+            setEstadoReserva(estadoNuevo);
+            await seleccionarReservaEspecifica(id_reserva);
+        }
+    }
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-sky-50/30">
@@ -827,6 +881,50 @@ export default function Calendario() {
                         <p className="text-sm text-slate-500 mt-1">Revisa reservas y actividades de todos los profesionales.</p>
                     </div>
                     <InfoButton informacion={"Este apartado le permite tener una vista rápida y general de todos los horarios agendados y los bloqueos de agenda registrados en el sistema.\n\nPara ingresar nuevos agendamientos o citas, debe dirigirse al módulo de Ingreso de Agendamientos.\n\nPara registrar bloqueos de agenda, debe utilizar el módulo de Bloqueo de Agenda.\n\nEste calendario es únicamente de consulta y visualización."}/>
+                </div>
+
+                <div className="mb-6 rounded-[20px] border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:flex-1">
+                            <div className="rounded-2xl border border-cyan-200 bg-cyan-50/80 px-3 py-2.5">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-600">Paciente</p>
+                                <p className="mt-1 truncate text-sm font-semibold text-slate-900">
+                                    {id_reserva ? `${nombrePaciente || "Sin"} ${apellidoPaciente || "asignar"}` : "Sin reserva seleccionada"}
+                                </p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Estado actual</p>
+                                <p className="mt-1 truncate text-sm font-semibold text-slate-900">{estadoReserva || "--"}</p>
+                            </div>
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">Reserva</p>
+                                <p className="mt-1 truncate text-sm font-semibold text-slate-900">{id_reserva ? `#${id_reserva}` : "--"}</p>
+                            </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                type="button"
+                                onClick={() => cambiarEstadoRapido("asiste")}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-200/80 border-l-[4px] border-l-cyan-500 bg-cyan-50/80 px-4 py-2.5 text-sm font-semibold text-cyan-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-cyan-100"
+                            >
+                                Asiste
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => cambiarEstadoRapido("no asiste")}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-pink-200/80 border-l-[4px] border-l-pink-500 bg-pink-50/80 px-4 py-2.5 text-sm font-semibold text-pink-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-pink-100"
+                            >
+                                No asiste
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => cambiarEstadoRapido("finalizado")}
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-orange-200/80 border-l-[4px] border-l-orange-500 bg-orange-50/80 px-4 py-2.5 text-sm font-semibold text-orange-800 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.55)] transition-all duration-150 hover:bg-orange-100"
+                            >
+                                Finalizado
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
@@ -910,12 +1008,19 @@ export default function Calendario() {
                             style={{height: "100%"}}
                             selectable
                             popup
+                            min={crearHoraLimite(HORA_MINIMA_AGENDA)}
+                            max={crearHoraLimite(HORA_MAXIMA_AGENDA)}
+                            scrollToTime={crearHoraLimite(HORA_MINIMA_AGENDA)}
                             step={30}
                             timeslots={2}
                             longPressThreshold={esMobile ? 300 : 10}
                             onSelecting={(slot) => {
                                 const start = slot.start ?? slot;
                                 const end = slot.end ?? slot;
+                                if (!estaDentroHorarioAgenda(start, end)) {
+                                    toast.error("Solo puedes visualizar y seleccionar entre 07:00 y 23:00 horas.");
+                                    return false;
+                                }
                                 if (isOverlapping(start, end)) {
                                     toast.error('Horario no disponible (solapa con una reserva existente)');
                                     return false;
@@ -937,6 +1042,10 @@ export default function Calendario() {
                             onSelectSlot={(slotInfo) => {
                                 const start = slotInfo.start ?? slotInfo;
                                 const end = slotInfo.end ?? slotInfo;
+                                if (!estaDentroHorarioAgenda(start, end)) {
+                                    toast.error("Solo puedes visualizar y seleccionar entre 07:00 y 23:00 horas.");
+                                    return;
+                                }
                                 if (isOverlapping(start, end)) {
                                     toast.error('No puede seleccionar un horario que ya está ocupado');
                                     return;

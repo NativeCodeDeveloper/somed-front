@@ -23,6 +23,14 @@ const locales = {es: es};
 const dfStartOfWeek = (date) => startOfWeek(date, {locale: es});
 const localizer = dateFnsLocalizer({format, parse, startOfWeek: dfStartOfWeek, getDay, locales});
 const DnDCalendar = withDragAndDrop(Calendar);
+const HORA_MINIMA_AGENDA = 7;
+const HORA_MAXIMA_AGENDA = 23;
+
+function crearHoraLimite(hora, minuto = 0, segundo = 0) {
+    const fecha = new Date();
+    fecha.setHours(hora, minuto, segundo, 0);
+    return fecha;
+}
 
 export default function Calendario() {
     return (
@@ -298,6 +306,18 @@ function CalendarioContent() {
         return new Date(`${soloFecha}T${hora}`);
     }
 
+    function estaDentroHorarioAgenda(start, end) {
+        if (!(start instanceof Date) || Number.isNaN(start.getTime())) return false;
+        if (!(end instanceof Date) || Number.isNaN(end.getTime())) return false;
+
+        const minutosInicio = start.getHours() * 60 + start.getMinutes();
+        const minutosFin = end.getHours() * 60 + end.getMinutes();
+        const minimo = HORA_MINIMA_AGENDA * 60;
+        const maximo = HORA_MAXIMA_AGENDA * 60;
+
+        return minutosInicio >= minimo && minutosFin <= maximo && end > start;
+    }
+
     function normalizarRut(valor = "") {
         return String(valor).replace(/[^a-zA-Z0-9]/g, "").toUpperCase();
     }
@@ -448,6 +468,12 @@ function CalendarioContent() {
             return false;
         }
 
+        if (!estaDentroHorarioAgenda(start, end)) {
+            toast.error("Solo puedes agendar entre 07:00 y 23:00 horas.");
+            setSelectionPreview(null);
+            return false;
+        }
+
         const tipoSolapamiento = obtenerTipoSolapamiento(start, end, ignoredReservaId);
         if (tipoSolapamiento === "reserva") {
             if (!selectionGuardRef.current.overlap) {
@@ -591,6 +617,10 @@ function CalendarioContent() {
             const final = new Date(`${fechaFinalizacion}T${horaFinalizacion}`);
             if (inicio < ahora) {
                 toast.error("No es posible agendar en fechas NO vigentes");
+                return false;
+            }
+            if (!estaDentroHorarioAgenda(inicio, final)) {
+                toast.error("Solo puedes agendar entre 07:00 y 23:00 horas.");
                 return false;
             }
             if (final < inicio) {
@@ -740,6 +770,12 @@ function CalendarioContent() {
                 return toast.error("Debe indicar el rango y el motivo del bloqueo.");
             }
 
+            const inicio = new Date(`${fechaInicio}T${horaInicio}`);
+            const final = new Date(`${fechaFinalizacion}T${horaFinalizacion}`);
+            if (!estaDentroHorarioAgenda(inicio, final)) {
+                return toast.error("Solo puedes bloquear horarios entre 07:00 y 23:00 horas.");
+            }
+
             const res = await fetch(`${API}/bloqueoAgenda/InsertarBloqueo`, {
                 method: "POST",
                 headers: {Accept: "application/json", "Content-Type": "application/json"},
@@ -833,7 +869,7 @@ function CalendarioContent() {
         }));
         const eventosBloqueos = expandirBloqueosPorDia(dataBloqueos || []).map((bloqueo) => ({
             ...bloqueo,
-            allDay: currentView === "month",
+            allDay: false,
         }));
 
         if (currentView === "month") {
@@ -1538,6 +1574,9 @@ function CalendarioContent() {
                             selectable
                             resizable
                             popup
+                            min={crearHoraLimite(HORA_MINIMA_AGENDA)}
+                            max={crearHoraLimite(HORA_MAXIMA_AGENDA)}
+                            scrollToTime={crearHoraLimite(HORA_MINIMA_AGENDA)}
                             step={30}
                             timeslots={2}
                             draggableAccessor={(event) => event.tipo === "reserva"}
