@@ -8,6 +8,7 @@ function ReservaHoraContent() {
     const horaInicio = searchParams.get('hora') || '';
     const emailPaciente = searchParams.get('email') || '';
     const nombreEmpresa = process.env.NEXT_PUBLIC_EMPRESA_NOMBRE?.trim();
+    const nombreEmpresaMostrar = nombreEmpresa || "Somed Centro Oftalmologico";
 
   return (
     <section className="relative min-h-[70vh] w-full px-4 py-10 flex items-center justify-center bg-gradient-to-b from-slate-100 via-slate-50 to-slate-100">
@@ -45,17 +46,13 @@ function ReservaHoraContent() {
               </h1>
 
               <p className="mt-2 text-slate-700">
-                {nombreEmpresa ? (
-                  <>
-                    Su hora con{" "}
-                    <span className="font-semibold text-slate-900">
-                      el equipo profesional de {nombreEmpresa}
-                    </span>{" "}
-                    ha sido registrada con éxito.
-                  </>
-                ) : (
-                  "Su hora ha sido registrada con éxito."
-                )}
+                <>
+                  Su hora con{" "}
+                  <span className="font-semibold text-slate-900">
+                    el equipo profesional de {nombreEmpresaMostrar}
+                  </span>{" "}
+                  ha sido registrada con éxito.
+                </>
               </p>
             </div>
           </div>
