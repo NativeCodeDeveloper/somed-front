@@ -116,7 +116,7 @@ function ReservaHoraContent() {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-slate-900">Ubicación</p>
-                    <p className="text-sm text-slate-600">Centro Integral ESSENZA, 12 de Febrero 926, Pitrufquen</p>
+                    <p className="text-sm text-slate-600">Somed Centro oftalmologico</p>
                   </div>
                 </div>
               </div>
