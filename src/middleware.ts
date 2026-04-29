@@ -1,6 +1,6 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { isSecretariaAllowedPath, isSecretariaRole } from "./lib/dashboardAccess";
+import { extractDashboardRole, isSecretariaAllowedPath, isSecretariaRole } from "./lib/dashboardAccess";
 
 export default clerkMiddleware(async (auth, req) => {
     const {userId, sessionClaims} = await auth();
@@ -9,7 +9,7 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    const role = sessionClaims?.metadata?.role;
+    const role = extractDashboardRole(sessionClaims);
     const pathname = req.nextUrl.pathname;
 
     if (isSecretariaRole(role) && !isSecretariaAllowedPath(pathname)) {

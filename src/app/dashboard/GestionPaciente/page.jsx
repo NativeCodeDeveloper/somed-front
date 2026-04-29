@@ -2,7 +2,7 @@
 
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow,} from "@/components/ui/table"
 import {useState, useEffect} from "react";
-import {useAuth} from "@clerk/nextjs";
+import {useUser} from "@clerk/nextjs";
 import ToasterClients from "@/Componentes/ToasterClient";
 import ShadcnInput from "@/Componentes/shadcnInput2";
 import {ShadcnSelect} from "@/Componentes/shadcnSelect";
@@ -14,13 +14,13 @@ import {useRouter} from "next/navigation";
 import {UserIcon} from "@heroicons/react/24/outline";
 import {InfoButton} from "@/Componentes/InfoButton";
 import {Textarea} from "@/components/ui/textarea";
-import {isSecretariaRole, normalizeDashboardRole} from "@/lib/dashboardAccess";
+import {extractDashboardRole, isSecretariaRole} from "@/lib/dashboardAccess";
 
 
 export default function GestionPaciente() {
 
     const API = process.env.NEXT_PUBLIC_API_URL;
-    const {sessionClaims} = useAuth();
+    const {user} = useUser();
     const [listaPacientes, setListaPacientes] = useState([]);
     const [nombre, setNombre] = useState("");
     const [apellido, setApellido] = useState("");
@@ -43,7 +43,7 @@ export default function GestionPaciente() {
     const [rutBuscado, setRutBuscado] = useState("");
 
     const router = useRouter();
-    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const role = extractDashboardRole(user);
     const esSecretaria = isSecretariaRole(role);
 
     function verDetallePaciente(id_paciente) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import OrbBackground from "@/components/OrbBackground";
 import { Michroma } from "next/font/google";
@@ -22,7 +22,7 @@ import {
     Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isSecretariaRole, normalizeDashboardRole } from "@/lib/dashboardAccess";
+import { extractDashboardRole, isSecretariaRole } from "@/lib/dashboardAccess";
 import toast from "react-hot-toast";
 
 const michroma = Michroma({ weight: "400", subsets: ["latin"], display: "swap" });
@@ -154,9 +154,9 @@ function MiniCalendar() {
 
 export default function DashboardHome() {
     const API = process.env.NEXT_PUBLIC_API_URL;
-    const { sessionClaims } = useAuth();
+    const { user } = useUser();
     const [dataLista, setdataLista] = useState([]);
-    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const role = extractDashboardRole(user);
     const esSecretaria = isSecretariaRole(role);
     const acciones = esSecretaria ? accionesSecretaria : accionesAdministrador;
 

@@ -31,6 +31,19 @@ export function normalizeDashboardRole(role = "") {
     return normalizedRole;
 }
 
+export function extractDashboardRole(source = {}) {
+    const role =
+        source?.role ??
+        source?.metadata?.role ??
+        source?.publicMetadata?.role ??
+        source?.public_metadata?.role ??
+        source?.unsafeMetadata?.role ??
+        source?.unsafe_metadata?.role ??
+        "";
+
+    return normalizeDashboardRole(role);
+}
+
 export function isSecretariaRole(role = "") {
     return normalizeDashboardRole(role) === "secretaria";
 }

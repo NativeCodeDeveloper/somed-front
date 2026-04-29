@@ -1,11 +1,12 @@
 // app/dashboard/layout.jsx
 import { ClerkProvider } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { Michroma } from "next/font/google";
 import MobileNav from "./MobileNav";
 import SignOutBtn from "./SignOutBtn";
-import { isSecretariaRole, normalizeDashboardRole } from "@/lib/dashboardAccess";
+import DashboardAccessGuard from "./DashboardAccessGuard";
+import { extractDashboardRole, isSecretariaRole } from "@/lib/dashboardAccess";
 
 const michroma = Michroma({ weight: "400", subsets: ["latin"], display: "swap" });
 
@@ -145,8 +146,8 @@ function SecretariaSidebar() {
 }
 
 export default async function DashboardLayout({ children }) {
-    const {sessionClaims} = await auth();
-    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const user = await currentUser();
+    const role = extractDashboardRole(user);
     const esSecretaria = isSecretariaRole(role);
 
     return (
@@ -492,6 +493,7 @@ export default async function DashboardLayout({ children }) {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 h-full overflow-y-auto">
+                    <DashboardAccessGuard />
                     <MobileNav role={role} />
 
                     <main className="min-w-0">
