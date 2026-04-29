@@ -1019,7 +1019,7 @@ function CalendarioContent() {
                     textOverflow: 'clip',
                     lineHeight: esVistaMes ? '1' : '1.3',
                     padding: esVistaMes ? '2px 4px' : '6px 8px',
-                    fontSize: esVistaMes ? '0.58rem' : '0.32rem',
+                    fontSize: esVistaMes ? '0.9rem' : '0.8rem',
                     boxSizing: 'border-box',
                     borderRadius: '0px',
                     backgroundColor: 'rgba(107, 114, 128, 0.28)',
@@ -1045,7 +1045,7 @@ function CalendarioContent() {
                 textOverflow: 'ellipsis',
                 lineHeight: '1',
                 padding: esVistaMes ? '2px 4px' : '0',
-                fontSize: esVistaMes ? '0.58rem' : '0.32rem',
+                fontSize: esVistaMes ? '0.95rem' : '0.85rem',
                 boxSizing: 'border-box',
                 borderRadius: '0px',
                 backgroundColor: esSeleccion ? 'rgba(124, 58, 237, 0.24)' : paletteReserva.backgroundColor,
@@ -1093,7 +1093,7 @@ function CalendarioContent() {
     const EventComponent = ({event}) => (
         <div
             title={obtenerTooltipEvento(event)}
-            className="truncate text-[6px] leading-none w-full h-full flex items-center gap-1 px-[2px]"
+            className="truncate text-sm md:text-base leading-tight font-semibold w-full h-full flex items-center gap-1 px-1"
             style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}
         >
             {event.tipo === "bloqueo" && (
@@ -1106,7 +1106,7 @@ function CalendarioContent() {
     );
 
     const TitleOnlyEvent = ({event}) => (
-        <div title={obtenerTooltipEvento(event)} className="truncate text-[6px] leading-none font-medium w-full flex items-center gap-1" style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+        <div title={obtenerTooltipEvento(event)} className="truncate text-sm md:text-base leading-tight font-semibold w-full flex items-center gap-1 px-1" style={{whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
             {event.tipo === "bloqueo" && (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
