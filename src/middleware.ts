@@ -20,13 +20,21 @@ import { extractDashboardRole, isSecretariaAllowedPath, isSecretariaRole } from 
 
 export default clerkMiddleware(async (auth, req) => {
     const {userId, sessionClaims} = await auth();
+    const pathname = req.nextUrl.pathname;
+
+    if (pathname.startsWith("/sign-in")) {
+        if (userId) {
+            return NextResponse.redirect(new URL("/dashboard", req.url));
+        }
+
+        return NextResponse.next();
+    }
 
     if (!userId) {
         return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
     const role = extractDashboardRole(sessionClaims);
-    const pathname = req.nextUrl.pathname;
 
     if (isSecretariaRole(role) && !isSecretariaAllowedPath(pathname)) {
         return NextResponse.redirect(new URL("/dashboard/no-access", req.url));
@@ -36,8 +44,7 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-    matcher: ["/dashboard/:path*"],
+    matcher: ["/dashboard/:path*", "/sign-in", "/sign-in/:path*"],
 };
-
 
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignIn } from "@clerk/nextjs";
+import { useAuth, useSignIn } from "@clerk/nextjs";
 import { Michroma } from "next/font/google";
 import { motion } from "framer-motion";
 import OrbBackground from "@/components/OrbBackground";
@@ -32,12 +32,19 @@ const trustItems = [
 
 export default function Page() {
   const router = useRouter();
+  const { userId } = useAuth();
   const { isLoaded, signIn, setActive } = useSignIn();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isLoaded && userId) {
+      router.replace("/dashboard");
+    }
+  }, [isLoaded, router, userId]);
 
   if (!isLoaded) {
     return (
@@ -64,8 +71,15 @@ export default function Page() {
         setError("Se requiere un factor adicional para completar el ingreso.");
       }
     } catch (err) {
+      const clerkMessage = err?.errors?.[0]?.message || "";
+
+      if (clerkMessage.toLowerCase().includes("session already exists")) {
+        router.replace("/dashboard");
+        return;
+      }
+
       const msg =
-        err?.errors?.[0]?.message ||
+        clerkMessage ||
         "No pudimos iniciar sesion. Revisa tus datos e intentalo nuevamente.";
       setError(msg);
     } finally {
