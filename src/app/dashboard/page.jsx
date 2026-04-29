@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import OrbBackground from "@/components/OrbBackground";
 import { Michroma } from "next/font/google";
@@ -21,6 +22,7 @@ import {
     Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isSecretariaRole, normalizeDashboardRole } from "@/lib/dashboardAccess";
 import toast from "react-hot-toast";
 
 const michroma = Michroma({ weight: "400", subsets: ["latin"], display: "swap" });
@@ -38,10 +40,17 @@ const stagger = {
     visible: { transition: { staggerChildren: 0.06 } },
 };
 
-const acciones = [
+const accionesAdministrador = [
     { label: "Nuevo paciente", desc: "Registrar", icon: UserPlus, href: "/dashboard/GestionPaciente", color: "from-teal-500 to-teal-700" },
     { label: "Nueva cita", desc: "Agendar", icon: CalendarPlus, href: "/dashboard/calendario", color: "from-indigo-600 to-indigo-800" },
     { label: "Ficha clinica", desc: "Consultar", icon: FileText, href: "/dashboard/FichaClinica", color: "from-indigo-700 to-teal-600" },
+    { label: "Calendario", desc: "Ver agenda", icon: Calendar, href: "/dashboard/calendarioGeneral", color: "from-teal-600 to-indigo-700" },
+];
+
+const accionesSecretaria = [
+    { label: "Nuevo paciente", desc: "Registrar", icon: UserPlus, href: "/dashboard/GestionPaciente", color: "from-teal-500 to-teal-700" },
+    { label: "Nueva cita", desc: "Agendar", icon: CalendarPlus, href: "/dashboard/calendario", color: "from-indigo-600 to-indigo-800" },
+    { label: "Pacientes", desc: "Consultar", icon: FileText, href: "/dashboard/listaPacientes", color: "from-indigo-700 to-teal-600" },
     { label: "Calendario", desc: "Ver agenda", icon: Calendar, href: "/dashboard/calendarioGeneral", color: "from-teal-600 to-indigo-700" },
 ];
 
@@ -145,7 +154,11 @@ function MiniCalendar() {
 
 export default function DashboardHome() {
     const API = process.env.NEXT_PUBLIC_API_URL;
+    const { sessionClaims } = useAuth();
     const [dataLista, setdataLista] = useState([]);
+    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const esSecretaria = isSecretariaRole(role);
+    const acciones = esSecretaria ? accionesSecretaria : accionesAdministrador;
 
     async function buscarCitasHoy() {
         try {

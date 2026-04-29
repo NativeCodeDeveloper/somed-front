@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Michroma } from "next/font/google";
 import {
   CalendarDays,
+  CalendarPlus,
   ClipboardPlus,
   FileText,
   Home,
@@ -16,6 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { isSecretariaRole } from "@/lib/dashboardAccess";
 
 const michroma = Michroma({ weight: "400", subsets: ["latin"], display: "swap" });
 
@@ -37,9 +39,30 @@ const sections = [
   { title: "Gestión de Contenido", items: [links[6], links[7]] },
 ];
 
-export default function MobileNav() {
+const secretariaSections = [
+  { title: "Principal", items: [{ label: "Inicio", href: "/dashboard", icon: Home }] },
+  {
+    title: "Agenda Clínica",
+    items: [
+      { label: "Calendario General", href: "/dashboard/calendarioGeneral", icon: PanelsTopLeft },
+      { label: "Ingreso Agendamientos", href: "/dashboard/calendario", icon: CalendarDays },
+      { label: "Estado de Reservaciones", href: "/dashboard/agendaCitas", icon: ClipboardPlus },
+      { label: "Bloqueos de Agenda", href: "/dashboard/bloqueosAgenda", icon: CalendarPlus },
+    ],
+  },
+  {
+    title: "Pacientes",
+    items: [
+      { label: "Ingreso de Pacientes", href: "/dashboard/GestionPaciente", icon: Users },
+      { label: "Lista de Pacientes", href: "/dashboard/listaPacientes", icon: FileText },
+    ],
+  },
+];
+
+export default function MobileNav({ role = "" }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const navSections = isSecretariaRole(role) ? secretariaSections : sections;
 
   return (
     <div className="md:hidden sticky top-0 z-40">
@@ -103,7 +126,7 @@ export default function MobileNav() {
             </div>
 
             <nav className="max-h-[72vh] space-y-4 overflow-y-auto px-4 pb-4 pt-4">
-              {sections.map((section) => (
+              {navSections.map((section) => (
                 <div
                   key={section.title}
                   className="rounded-2xl border border-slate-200/80 bg-white/80 p-2 shadow-[0_8px_18px_rgba(15,23,42,0.04)]"

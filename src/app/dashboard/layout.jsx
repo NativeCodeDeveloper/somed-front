@@ -1,9 +1,11 @@
 // app/dashboard/layout.jsx
 import { ClerkProvider } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { Michroma } from "next/font/google";
 import MobileNav from "./MobileNav";
 import SignOutBtn from "./SignOutBtn";
+import { isSecretariaRole, normalizeDashboardRole } from "@/lib/dashboardAccess";
 
 const michroma = Michroma({ weight: "400", subsets: ["latin"], display: "swap" });
 
@@ -12,12 +14,149 @@ export const metadata = {
     description: "Panel de administración",
 };
 
-export default function DashboardLayout({ children }) {
+function SecretariaSidebar() {
+    return (
+        <aside className="hidden md:flex h-screen w-[240px] shrink-0 flex-col bg-gray-900 text-white border-r border-white/[0.06] selection:bg-violet-500/30 font-[family-name:var(--font-inter)]">
+            <div className="relative px-4 pb-3 pt-4 shrink-0">
+                <div className="relative flex justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="h-20 w-20 rounded-full bg-violet-500/[0.06] blur-2xl" />
+                    </div>
+                    <img
+                        src="/logo.png"
+                        alt="AgendaClinica"
+                        className="relative h-32 w-full object-contain object-center drop-shadow-[0_0_12px_rgba(139,92,246,0.15)]"
+                    />
+                </div>
+                <div className={`${michroma.className} -mt-1 text-center`}>
+                    <p className="text-[11.5px] leading-tight text-white/90 tracking-[0.08em]">AgendaClinica</p>
+                </div>
+                <div className="mt-3 h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent" />
+            </div>
+
+            <nav className="flex-1 px-3 pt-1 pb-1 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                <div className="space-y-3">
+                    <details className="group" open>
+                        <summary className="flex items-center justify-between px-2 py-1.5 text-[9px] font-medium text-white/35 cursor-pointer list-none select-none tracking-[0.08em] uppercase">
+                            <span className="flex items-center gap-2">
+                                <svg className="h-3.5 w-3.5 text-cyan-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                                </svg>
+                                Inicio
+                            </span>
+                        </summary>
+                        <div className="mt-1 ml-1 space-y-0.5 border-l border-white/[0.06] pl-3">
+                            <Link href="/dashboard" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Resumen Diario
+                            </Link>
+                        </div>
+                    </details>
+
+                    <details className="group" open>
+                        <summary className="flex items-center justify-between px-2 py-1.5 text-[9px] font-medium text-white/35 cursor-pointer list-none select-none tracking-[0.08em] uppercase">
+                            <span className="flex items-center gap-2">
+                                <svg className="h-3.5 w-3.5 text-cyan-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Agenda clínica
+                            </span>
+                        </summary>
+                        <div className="mt-1 ml-1 space-y-0.5 border-l border-white/[0.06] pl-3">
+                            <Link href="/dashboard/calendario" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Ingresar Agendamiento
+                            </Link>
+                            <Link href="/dashboard/calendarioGeneral" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Vista General
+                            </Link>
+                            <Link href="/dashboard/agendaCitas" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Listado de Reservaciones
+                            </Link>
+                            <Link href="/dashboard/bloqueosAgenda" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Bloqueos de Agenda
+                            </Link>
+                        </div>
+                    </details>
+
+                    <details className="group" open>
+                        <summary className="flex items-center justify-between px-2 py-1.5 text-[9px] font-medium text-white/35 cursor-pointer list-none select-none tracking-[0.08em] uppercase">
+                            <span className="flex items-center gap-2">
+                                <svg className="h-3.5 w-3.5 text-cyan-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                Pacientes
+                            </span>
+                        </summary>
+                        <div className="mt-1 ml-1 space-y-0.5 border-l border-white/[0.06] pl-3">
+                            <Link href="/dashboard/GestionPaciente" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Ingreso de Pacientes
+                            </Link>
+                            <Link href="/dashboard/listaPacientes" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                                <span className="h-[3px] w-[3px] rounded-full bg-white/15 group-hover/link:bg-violet-400 transition-all duration-200" />
+                                Lista de Pacientes
+                            </Link>
+                        </div>
+                    </details>
+                </div>
+
+                <div className="mt-5 pt-4 relative">
+                    <div className="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-violet-500/15 to-transparent" />
+                    <div className="px-2 flex items-center gap-2 text-[9px] font-medium text-white/30 tracking-[0.08em] uppercase">
+                        <svg className="h-3.5 w-3.5 text-cyan-400/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                        Atajos
+                    </div>
+                    <div className="mt-1.5 ml-1 space-y-0.5 border-l border-white/[0.06] pl-3">
+                        <Link href="/" className="group/link flex items-center gap-2.5 rounded-md px-2 py-[6px] text-[12.5px] font-light text-white/50 hover:text-white/90 hover:bg-white/[0.05] transition-all duration-200">
+                            <svg className="h-3.5 w-3.5 text-cyan-400/70 group-hover/link:text-cyan-300 transition-colors duration-200" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clipRule="evenodd" />
+                                <path fillRule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clipRule="evenodd" />
+                            </svg>
+                            Volver al sitio
+                        </Link>
+                        <SignOutBtn />
+                    </div>
+                </div>
+            </nav>
+
+            <div className="relative px-3 py-3 shrink-0">
+                <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-violet-500/15 to-transparent" />
+                <div className="rounded-xl bg-gradient-to-br from-white/[0.04] to-white/[0.01] ring-1 ring-white/[0.07] px-3.5 py-3">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <div className="text-[9.5px] font-semibold text-white/25 tracking-[0.1em] uppercase">Perfil</div>
+                            <div className="mt-0.5 text-[12px] font-medium text-white/65">Secretaria</div>
+                        </div>
+                        <div className="relative flex items-center gap-1.5">
+                            <span className="absolute right-0 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-emerald-400/10 animate-ping" />
+                            <span className="relative h-2 w-2 rounded-full bg-emerald-400 block shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    );
+}
+
+export default async function DashboardLayout({ children }) {
+    const {sessionClaims} = await auth();
+    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const esSecretaria = isSecretariaRole(role);
+
     return (
         <ClerkProvider>
         <div className="h-screen w-full overflow-hidden bg-white">
             <div className="flex h-full w-full">
                 {/* Sidebar */}
+                {esSecretaria ? (
+                    <SecretariaSidebar />
+                ) : (
                 <aside className="hidden md:flex h-screen w-[240px] shrink-0 flex-col bg-gray-900 text-white border-r border-white/[0.06] selection:bg-violet-500/30 font-[family-name:var(--font-inter)]">
 
                     {/* ── Brand ── */}
@@ -349,10 +488,11 @@ export default function DashboardLayout({ children }) {
                         </div>
                     </div>
                 </aside>
+                )}
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 h-full overflow-y-auto">
-                    <MobileNav />
+                    <MobileNav role={role} />
 
                     <main className="min-w-0">
                         {children}

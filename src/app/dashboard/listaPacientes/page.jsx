@@ -2,20 +2,25 @@
 
 import {Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow} from "@/components/ui/table";
 import {useEffect, useState} from "react";
+import {useAuth} from "@clerk/nextjs";
 import ToasterClients from "@/Componentes/ToasterClient";
 import ShadcnInput from "@/Componentes/shadcnInput2";
 import {toast} from "react-hot-toast";
 import {useRouter} from "next/navigation";
 import {UserIcon} from "@heroicons/react/24/outline";
 import {InfoButton} from "@/Componentes/InfoButton";
+import {isSecretariaRole, normalizeDashboardRole} from "@/lib/dashboardAccess";
 
 export default function ListaPacientes() {
     const API = process.env.NEXT_PUBLIC_API_URL;
+    const {sessionClaims} = useAuth();
     const [listaPacientes, setListaPacientes] = useState([]);
     const [nombreBuscado, setNombreBuscado] = useState("");
     const [rutBuscado, setRutBuscado] = useState("");
 
     const router = useRouter();
+    const role = normalizeDashboardRole(sessionClaims?.metadata?.role);
+    const esSecretaria = isSecretariaRole(role);
 
     function verDetallePaciente(id_paciente) {
         router.push(`/dashboard/paciente/${id_paciente}`);
@@ -219,7 +224,7 @@ export default function ListaPacientes() {
                                 <TableCaption className="font-medium text-slate-400 text-xs py-4">Listado de pacientes registrados en el sistema</TableCaption>
                                 <TableHeader>
                                     <TableRow className="bg-[linear-gradient(135deg,#0f172a_0%,#312e81_58%,#0891b2_100%)]">
-                                        <TableHead className="w-[80px] text-center font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Ver</TableHead>
+                                        <TableHead className="w-[80px] text-center font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">{esSecretaria ? "Perfil" : "Ver"}</TableHead>
                                         <TableHead className="text-left font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Nombre</TableHead>
                                         <TableHead className="text-left font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">Apellido</TableHead>
                                         <TableHead className="text-left font-semibold text-white text-xs uppercase tracking-wider px-3 py-3">RUT</TableHead>
@@ -233,11 +238,17 @@ export default function ListaPacientes() {
                                             key={paciente.id_paciente}
                                             className={"hover:bg-indigo-50/50 transition-colors duration-100 " + (i % 2 === 0 ? "bg-white" : "bg-slate-50/50")}>
                                             <TableCell className="text-center px-3 py-2.5">
-                                                <button
-                                                    onClick={() => verDetallePaciente(paciente.id_paciente)}
-                                                    className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors duration-150">
-                                                    <UserIcon className="w-4 h-4"/>
-                                                </button>
+                                                {esSecretaria ? (
+                                                    <span className="inline-flex items-center justify-center h-8 min-w-8 rounded-lg bg-slate-100 border border-slate-200 text-slate-400 text-xs font-semibold">
+                                                        -
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => verDetallePaciente(paciente.id_paciente)}
+                                                        className="inline-flex items-center justify-center h-8 w-8 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors duration-150">
+                                                        <UserIcon className="w-4 h-4"/>
+                                                    </button>
+                                                )}
                                             </TableCell>
                                             <TableCell className="font-medium text-slate-800 text-sm px-3 py-2.5">{paciente.nombre}</TableCell>
                                             <TableCell className="text-slate-600 text-sm px-3 py-2.5">{paciente.apellido}</TableCell>

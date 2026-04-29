@@ -1,76 +1,24 @@
-
-
-
-
-
-
-
-
-
-
-
-// frontend/src/middleware.ts
-import { NextResponse, type NextRequest } from 'next/server'
-
-// Middleware sin lógica — solo deja pasar todo
-export default function middleware(_req: NextRequest) {
-return NextResponse.next()
-}
-
-// (Opcional) Indica en qué rutas se ejecuta
-export const config = {
-matcher: ['/dashboard/:path*'], // o simplemente [] si quieres que no aplique a ninguna
-}
-
-
-/*
-
-
-
-
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
-
-const isDashboard = createRouteMatcher(['/dashboard(.*)'])
-
-// Rutas permitidas para recepcionista: inicio + módulo calendario completo
-const isRecepcionistaAllowed = createRouteMatcher([
-  '/dashboard',
-  '/dashboard/no-access',
-  '/dashboard/calendarioGeneral',
-  '/dashboard/calendario',
-  '/dashboard/agendaCitas',
-  '/dashboard/bloqueosAgenda',
-  '/dashboard/AgendaDetalle/(.*)',
-  '/dashboard/GestionPaciente',
-  '/dashboard/paciente/(.*)',
-])
+import { clerkMiddleware } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
+import { isSecretariaAllowedPath, isSecretariaRole } from "./lib/dashboardAccess";
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isDashboard(req)) return NextResponse.next()
+    const {userId, sessionClaims} = await auth();
 
-  const { userId, sessionClaims } = await auth()
+    if (!userId) {
+        return NextResponse.redirect(new URL("/sign-in", req.url));
+    }
 
-  // TEMP: comentado para entrar directo al dashboard sin autenticación y presentar a cliente
-  // if (!userId) {
-  //   return NextResponse.redirect(new URL('/sign-in', req.url))
-  // }
+    const role = sessionClaims?.metadata?.role;
+    const pathname = req.nextUrl.pathname;
 
-  // Leer rol desde publicMetadata (configurado en Clerk Dashboard)
-  const role = (sessionClaims?.metadata as { role?: string } | undefined)?.role
+    if (isSecretariaRole(role) && !isSecretariaAllowedPath(pathname)) {
+        return NextResponse.redirect(new URL("/dashboard/no-access", req.url));
+    }
 
-  // TEMP: comentado para saltarse restricción de rol recepcionista
-  // if (role === 'recepcionista' && !isRecepcionistaAllowed(req)) {
-  //   return NextResponse.redirect(new URL('/dashboard/no-access', req.url))
-  // }
-
-  return NextResponse.next()
-})
+    return NextResponse.next();
+});
 
 export const config = {
-  matcher: ['/dashboard/:path*'],
-}
-
-
-
-*/
+    matcher: ["/dashboard/:path*"],
+};
