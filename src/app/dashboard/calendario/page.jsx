@@ -11,7 +11,6 @@ import parse from "date-fns/parse";
 import startOfWeek from "date-fns/startOfWeek";
 import getDay from "date-fns/getDay";
 import ShadcnInput from "@/Componentes/shadcnInput2";
-import ShadcnFechaHora from "@/Componentes/ShadcnFechaHora";
 import ToasterClient from "@/Componentes/ToasterClient";
 import {toast} from "react-hot-toast";
 
@@ -301,16 +300,6 @@ function CalendarioContent() {
         return `${y}-${m}-${day}`;
     }
 
-    const manejarFechaHoraInicio = (dateTime) => {
-        setfechaInicio(formatearFechaLocal(dateTime));
-        setHoraInicio(dateTime.toTimeString().slice(0, 8));
-    };
-
-    const manejarFechaHoraFinalizacion = (dateTime) => {
-        setfechaFinalizacion(formatearFechaLocal(dateTime));
-        setHoraFinalizacion(dateTime.toTimeString().slice(0, 8));
-    };
-
     function convertirAFechaCalendario(fechaISO, hora) {
         const soloFecha = fechaISO.slice(0, 10);
         return new Date(`${soloFecha}T${hora}`);
@@ -508,6 +497,31 @@ function CalendarioContent() {
 
         if (isOverlapping(nuevoInicio, nuevoFin)) {
             toast.error("La hora ajustada se superpone con otra reserva o bloqueo.");
+            return;
+        }
+
+        actualizarBorradorSeleccion(nuevoInicio, nuevoFin);
+    }
+
+    function actualizarFechaSeleccionDraft(valorFecha) {
+        if (!selectionDraft || !valorFecha) return;
+
+        const [year, month, day] = valorFecha.split("-").map(Number);
+        if ([year, month, day].some(Number.isNaN)) return;
+
+        const nuevoInicio = new Date(selectionDraft.start);
+        const nuevoFin = new Date(selectionDraft.end);
+
+        nuevoInicio.setFullYear(year, month - 1, day);
+        nuevoFin.setFullYear(year, month - 1, day);
+
+        if (!estaDentroHorarioAgenda(nuevoInicio, nuevoFin)) {
+            toast.error("Solo puedes agendar entre 09:00 y 20:00 horas, con un rango valido.");
+            return;
+        }
+
+        if (isOverlapping(nuevoInicio, nuevoFin)) {
+            toast.error("La fecha ajustada se superpone con otra reserva o bloqueo.");
             return;
         }
 
@@ -1412,6 +1426,7 @@ function CalendarioContent() {
                             </div>
                         </section>
 
+                        {/*
                         <section className="rounded-[20px] border border-slate-200 bg-white p-4">
                             <div className="mb-3 flex items-center justify-between gap-3">
                                 <div>
@@ -1467,6 +1482,7 @@ function CalendarioContent() {
                                 </div>
                             </div>
                         </section>
+                        */}
 
                         <div className="mt-4 rounded-[20px] border border-slate-200 bg-slate-50/70 p-4">
                             <div className="mb-3">
@@ -1717,6 +1733,16 @@ function CalendarioContent() {
                         <div className="max-h-[62vh] space-y-3 overflow-y-auto px-3 py-3 text-xs text-slate-600 md:max-h-[58vh] md:px-4 md:py-4 md:text-sm">
                             <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                 <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+                                    <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Fecha</div>
+                                    <div className="mt-1 truncate font-semibold capitalize text-slate-800">{formatFechaLarga(selectionDraft.start)}</div>
+                                    <input
+                                        type="date"
+                                        value={formatearFechaLocal(selectionDraft.start)}
+                                        onChange={(e) => actualizarFechaSeleccionDraft(e.target.value)}
+                                        className="mt-2 h-9 w-full rounded-xl border border-violet-200 bg-white px-3 text-[12px] font-medium text-slate-800 outline-none transition-all focus:border-violet-300 focus:ring-4 focus:ring-violet-100"
+                                    />
+                                </div>
+                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
                                     <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Inicio</div>
                                     <div className="mt-1 font-semibold text-violet-700">{formatHoraCorta(selectionDraft.start)}</div>
                                     <input
@@ -1737,10 +1763,6 @@ function CalendarioContent() {
                                         onChange={(e) => actualizarHoraSeleccionDraft("end", e.target.value)}
                                         className="mt-2 h-9 w-full rounded-xl border border-violet-200 bg-white px-3 text-[12px] font-medium text-slate-800 outline-none transition-all focus:border-violet-300 focus:ring-4 focus:ring-violet-100"
                                     />
-                                </div>
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-2.5">
-                                    <div className="text-[10px] uppercase tracking-[0.18em] text-slate-400">Fecha</div>
-                                    <div className="mt-1 truncate font-semibold capitalize text-slate-800">{formatFechaLarga(selectionDraft.start)}</div>
                                 </div>
                             </div>
 
