@@ -247,13 +247,14 @@ export default function Profesionales() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-slate-700">Descripción del profesional</label>
+                                <label className="text-sm font-medium text-slate-700">Datos de transferencia / instrucciones de pago</label>
                                 <TextAreaDinamic
                                     value={descripcionProfesional}
                                     onChange={(e) => setDescripcionProfesional(e.target.value)}
-                                    placeholder="Ej: Especialista en ortodoncia con 10 años de experiencia"
+                                    placeholder="Ej: Pago debe realizarse en efectivo o transferencia al: 12.345.678-9 Banco de Chile Cuenta Corriente 000-000000-00 correo@gmail.com"
                                     className="w-full rounded-xl border-slate-200 focus:border-indigo-400 focus:ring-indigo-100"
                                 />
+                                <p className="text-xs text-slate-400">Este texto se mostrará en el resumen de la cita al momento de reservar.</p>
                             </div>
                         </div>
 

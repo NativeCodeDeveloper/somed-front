@@ -25,6 +25,7 @@ export default function FormularioReservaProfesional() {
     const {id_profesional} = useParams();
 
     const [totalPago, setTotalPago] = useState("");
+    const [duracionServicio, setDuracionServicio] = useState("");
     const router = useRouter();
 
     async function seleccionarProfesionalDatos(id_profesional) {
@@ -258,6 +259,27 @@ export default function FormularioReservaProfesional() {
         }
     }
 
+    const transferenciaPorProfesional = {
+        "22": {
+            titular: "Ivonne Orellana Machuca",
+            rut: "17.517.094-4",
+            banco: "Banco de Chile",
+            tipoCuenta: "Cuenta Corriente",
+            numeroCuenta: "00-217-06770-00",
+            email: "iv.orellana01@gmail.com",
+        },
+        "23": {
+            titular: "Jaime Orellana Machuca",
+            rut: "19.422.184-3",
+            banco: "Banco Estado",
+            tipoCuenta: "Cuenta RUT",
+            numeroCuenta: "19.422.184-3",
+            email: "",
+        },
+    };
+
+    const datosTransferencia = transferenciaPorProfesional[String(id_profesional)] || null;
+
     const formatoCLP = new Intl.NumberFormat("es-CL", {
         style: "currency",
         currency: "CLP",
@@ -333,6 +355,7 @@ export default function FormularioReservaProfesional() {
                                     if (tarifa) {
                                         setTotalPago(tarifa.precio);
                                         setServicioSeleccionado(tarifa.nombreServicio);
+                                        setDuracionServicio(tarifa.duracion || "");
                                     }
                                 }}
                                 placeholder="Seleccione un servicio"
@@ -458,36 +481,83 @@ export default function FormularioReservaProfesional() {
                         <div>
                             <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-400">Resumen de tu cita</h2>
                             <div className="mt-1 h-px w-full bg-gradient-to-r from-slate-200 via-slate-100 to-transparent"></div>
-                            <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    {fechaInicio && (
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">D</div>
-                                            <div>
-                                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Fecha</p>
-                                                <p className="text-sm font-semibold text-slate-800">{fechaInicio.toString()}</p>
-                                            </div>
+                            <div className="mt-4 space-y-3">
+
+                                {/* Servicio y profesional */}
+                                {servicioSeleccionado && (
+                                    <div className="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">S</div>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-900">{servicioSeleccionado}</p>
+                                            <p className="text-xs text-slate-500">{profesionalSeleccionado}</p>
                                         </div>
-                                    )}
-                                    {horaInicio && (
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">H</div>
-                                            <div>
-                                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Horario</p>
-                                                <p className="text-sm font-semibold text-slate-800">{horaInicio.toString()} – {horaFin.toString()}</p>
-                                            </div>
+                                    </div>
+                                )}
+
+                                {/* Datos de transferencia del profesional */}
+                                {datosTransferencia && (
+                                    <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                                        <p className="mb-1 text-[11px] font-medium uppercase tracking-wider text-slate-400">Datos de transferencia</p>
+                                        <p className="mb-3 text-xs text-slate-500">El pago debe realizarse por transferencia bancaria o de forma presencial, presentando su comprobante.</p>
+                                        <div className="space-y-2">
+                                            {[
+                                                { label: "Titular", value: datosTransferencia.titular },
+                                                { label: "RUT", value: datosTransferencia.rut },
+                                                { label: "Banco", value: datosTransferencia.banco },
+                                                { label: "Tipo de cuenta", value: datosTransferencia.tipoCuenta },
+                                                { label: "N° de cuenta", value: datosTransferencia.numeroCuenta },
+                                                { label: "Email", value: datosTransferencia.email },
+                                            ].map(({ label, value }) => value && (
+                                                <div key={label} className="flex items-center justify-between gap-4 rounded-lg bg-white px-3 py-2 text-sm border border-slate-100">
+                                                    <span className="text-xs font-medium text-slate-400 shrink-0">{label}</span>
+                                                    <span className="font-semibold text-slate-800 text-right">{value}</span>
+                                                </div>
+                                            ))}
                                         </div>
-                                    )}
-                                    {totalPago && (
-                                        <div className="flex items-center gap-3 sm:col-span-2">
-                                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-bold text-white">$</div>
-                                            <div>
-                                                <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Valor consulta</p>
-                                                <p className="text-sm font-bold text-emerald-700">{formatoCLP.format(totalPago)}</p>
+                                    </div>
+                                )}
+
+                                <div className="rounded-xl border border-slate-100 bg-slate-50/80 p-4">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                        {fechaInicio && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">D</div>
+                                                <div>
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Fecha</p>
+                                                    <p className="text-sm font-semibold text-slate-800">{fechaInicio.toString()}</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    )}
+                                        )}
+                                        {horaInicio && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">H</div>
+                                                <div>
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Horario</p>
+                                                    <p className="text-sm font-semibold text-slate-800">{horaInicio.toString()} – {horaFin.toString()}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {duracionServicio && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900 text-xs text-white">⏱</div>
+                                                <div>
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Duración</p>
+                                                    <p className="text-sm font-semibold text-slate-800">{duracionServicio} minutos</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                        {totalPago && (
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-xs font-bold text-white">$</div>
+                                                <div>
+                                                    <p className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Valor consulta</p>
+                                                    <p className="text-sm font-bold text-emerald-700">{formatoCLP.format(totalPago)}</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
+
                             </div>
                         </div>
                     )}
